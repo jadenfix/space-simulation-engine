@@ -1,0 +1,59 @@
+name: native-spacewind
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  strict-build:
+    name: strict-${{ matrix.os }}-${{ matrix.compiler }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            compiler: gcc
+          - os: ubuntu-latest
+            compiler: clang
+          - os: macos-14
+            compiler: clang
+    runs-on: ${{ matrix.os }}
+    env:
+      CC: ${{ matrix.compiler }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build, test, and execute every example
+        run: |
+          make clean
+          make CFLAGS='-std=c11 -O2 -g -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wstrict-prototypes -Werror' all test
+          make examples
+          for cfg in dynamic_soaring_shear cme_encounter magnetic_sail; do
+            ./build/spacewind simulate \
+              "configs/${cfg}.cfg" \
+              "output/${cfg}.csv" \
+              "output/${cfg}.receipt.json"
+          done
+          python3 -m json.tool output/baseline.receipt.json >/dev/null
+          python3 -m json.tool output/hybrid_glider.receipt.json >/dev/null
+          python3 -m json.tool output/cme_encounter.receipt.json >/dev/null
+
+  cmake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure, build, and test through CMake
+        run: |
+          cmake -S . -B build-cmake -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-cmake
+          ctest --test-dir build-cmake --output-on-failure
+
+  sanitizers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Address and undefined behavior sanitizers
+        run: make asan

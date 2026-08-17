@@ -1,0 +1,10 @@
+build/
+cmake-build*/
+output/*.csv
+output/*.json
+*.o
+*.a
+*.dSYM/
+*.gcda
+*.gcno
+*.gcov

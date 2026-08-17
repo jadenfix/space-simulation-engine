@@ -1,0 +1,499 @@
+{
+  "schema": "spacewind.validation.v1",
+  "engine_version": "0.2.0",
+  "validation_date_pacific": "2026-08-16",
+  "platform": {
+    "system": "Linux",
+    "machine": "x86_64",
+    "python": "3.13.5",
+    "gcc": "gcc (Debian 14.2.0-19) 14.2.0",
+    "clang": "clang version 17.0.0 (https://github.com/swiftlang/llvm-project.git 10999b6d034fe318f3d56c83bddb6572593a8bb0)",
+    "cmake": "cmake version 3.31.6"
+  },
+  "source": {
+    "c_and_header_lines": 5753,
+    "runtime_dependencies": [
+      "ISO C11 standard library",
+      "libm"
+    ]
+  },
+  "build_matrix": {
+    "gcc_warning_as_error": "pass",
+    "clang_warning_as_error": "pass",
+    "cmake_ctest": "pass",
+    "address_sanitizer": "pass",
+    "undefined_behavior_sanitizer": "pass",
+    "clang_static_analyzer_translation_units": 13,
+    "gcc_fanalyzer_translation_units": 13
+  },
+  "bounded_checks": 3912,
+  "coverage": {
+    "line": {
+      "percent": 86.2592379408188,
+      "total": 2467,
+      "covered_estimate": 2128.0153999999998
+    },
+    "branch_executed": {
+      "percent": 93.94534661354582,
+      "total": 1255,
+      "covered_estimate": 1179.0141
+    },
+    "branch_taken": {
+      "percent": 67.5694422310757,
+      "total": 1255,
+      "covered_estimate": 847.9965
+    },
+    "files": [
+      {
+        "file": "src/cli.c",
+        "line_percent": 80.93,
+        "lines": 451,
+        "branch_executed_percent": 98.89,
+        "branches": 180,
+        "branch_taken_percent": 75.0
+      },
+      {
+        "file": "src/fields.c",
+        "line_percent": 88.26,
+        "lines": 230,
+        "branch_executed_percent": 88.64,
+        "branches": 88,
+        "branch_taken_percent": 62.5
+      },
+      {
+        "file": "src/gravity_grid.c",
+        "line_percent": 72.69,
+        "lines": 216,
+        "branch_executed_percent": 78.64,
+        "branches": 206,
+        "branch_taken_percent": 51.46
+      },
+      {
+        "file": "src/integrator.c",
+        "line_percent": 89.36,
+        "lines": 141,
+        "branch_executed_percent": 100.0,
+        "branches": 94,
+        "branch_taken_percent": 62.77
+      },
+      {
+        "file": "src/math3.c",
+        "line_percent": 88.6,
+        "lines": 114,
+        "branch_executed_percent": 100.0,
+        "branches": 48,
+        "branch_taken_percent": 85.42
+      },
+      {
+        "file": "src/metric.c",
+        "line_percent": 93.41,
+        "lines": 182,
+        "branch_executed_percent": 96.97,
+        "branches": 66,
+        "branch_taken_percent": 71.21
+      },
+      {
+        "file": "src/mhd1d.c",
+        "line_percent": 94.18,
+        "lines": 189,
+        "branch_executed_percent": 100.0,
+        "branches": 56,
+        "branch_taken_percent": 69.64
+      },
+      {
+        "file": "src/nbody.c",
+        "line_percent": 64.84,
+        "lines": 91,
+        "branch_executed_percent": 83.87,
+        "branches": 62,
+        "branch_taken_percent": 58.06
+      },
+      {
+        "file": "src/plasma.c",
+        "line_percent": 94.15,
+        "lines": 205,
+        "branch_executed_percent": 100.0,
+        "branches": 76,
+        "branch_taken_percent": 71.05
+      },
+      {
+        "file": "src/rng.c",
+        "line_percent": 63.33,
+        "lines": 30,
+        "branch_executed_percent": 0.0,
+        "branches": 2,
+        "branch_taken_percent": 0.0
+      },
+      {
+        "file": "src/simulation.c",
+        "line_percent": 89.46,
+        "lines": 465,
+        "branch_executed_percent": 98.82,
+        "branches": 338,
+        "branch_taken_percent": 74.85
+      },
+      {
+        "file": "src/spacecraft.c",
+        "line_percent": 92.16,
+        "lines": 153,
+        "branch_executed_percent": 94.87,
+        "branches": 39,
+        "branch_taken_percent": 58.97
+      }
+    ]
+  },
+  "solver_receipts": {
+    "kerr_circular_geodesic": {
+      "steps": 20000,
+      "spin_a_over_m": 0.8,
+      "radius_over_m": 10.0,
+      "relative_radius_drift": 1.9709099897869202e-16,
+      "interval_drift": -1.4432899320127035e-14,
+      "azimuth_rad": 6.283185307177474
+    },
+    "schwarzschild_circular_geodesic": {
+      "steps": 20000,
+      "relative_radius_drift": 1.7935280907060972e-14,
+      "interval_drift": 8.43769498715119e-15,
+      "azimuth_rad": 6.2831853071774715
+    },
+    "nbody_sun_earth_jupiter": {
+      "years": 12.0,
+      "relative_energy_error": 4.390595947271939e-14,
+      "final_center_of_mass_norm_m": 1.0487602802745103e-05
+    },
+    "poisson_uniform_sphere": {
+      "grid": [
+        41,
+        41,
+        41
+      ],
+      "iterations": 180,
+      "relative_residual": 7.927799526808226e-09,
+      "represented_mass_kg": 9.835775483079184e+24,
+      "max_sampled_relative_potential_error": 0.01515598031336598
+    },
+    "boris_uniform_b": {
+      "steps": 2000,
+      "relative_speed_drift": 4.3655745685100557e-16
+    },
+    "fdtd_periodic_pulse": {
+      "steps": 1200,
+      "relative_field_energy_change": 0.0009823788025980435
+    },
+    "electrostatic_pic": {
+      "steps": 1200,
+      "relative_total_energy_change": 1.719848829094136e-09,
+      "max_observed_abs_e_v_m": 0.0006413870127191295
+    },
+    "mhd_brio_wu_open_boundary_demo": {
+      "end_time": 0.2,
+      "minimum_output_density": 0.1172796088726242,
+      "minimum_output_pressure": 0.08811659734077748,
+      "final_total_mass": 0.5639044960270261,
+      "note": "The CLI demonstration uses transmissive edge fluxes; the bounded pre-boundary unit test is the mass-conservation receipt."
+    },
+    "parker_wind_profile": {
+      "minimum_radius_au": 0.03,
+      "maximum_radius_au": 30.0,
+      "speed_at_min_radius_km_s": 101.96258062218986,
+      "speed_at_max_radius_km_s": 602.633921356037,
+      "density_at_min_radius_m3": 22832738938.310852,
+      "density_at_max_radius_m3": 3863.1827753477846
+    }
+  },
+  "mission_scenarios": {
+    "baseline": {
+      "config_fnv1a64": "109bd53e3ece54c7",
+      "integrator": "rk4",
+      "controller": "sun_cone",
+      "accepted_steps": 43200,
+      "rejected_trial_steps": 0,
+      "duration_s": 2592000,
+      "final_radius_au": 1.007777958701848,
+      "final_speed_km_s": 29.691201221289266,
+      "specific_energy_delta_j_kg": 4066572.038962722,
+      "mechanical_energy_delta_j": 48798864.46755123,
+      "force_norm_summary": {
+        "frad_n": {
+          "min_n": 0.00036551759796192844,
+          "max_n": 0.0008534837791016075,
+          "mean_n": 0.00038682856325966745
+        },
+        "fesail_n": {
+          "min_n": 0.0027450326859897183,
+          "max_n": 0.00521860214550518,
+          "mean_n": 0.003879315809186968
+        },
+        "fmagsail_n": {
+          "min_n": 0.0,
+          "max_n": 0.0,
+          "mean_n": 0.0
+        },
+        "florentz_n": {
+          "min_n": 0.0,
+          "max_n": 0.0,
+          "mean_n": 0.0
+        }
+      },
+      "enabled_models": {
+        "gravity": true,
+        "j2": false,
+        "schwarzschild_1pn": true,
+        "solar_radiation_pressure": true,
+        "parameterized_electric_sail": true,
+        "parameterized_magnetic_sail": false,
+        "lorentz_force": false,
+        "synthetic_shear_layer": false,
+        "synthetic_cme_shell": false
+      },
+      "receipt_schema": "spacewind.receipt.v3",
+      "build": {
+        "compiler_id": "gcc",
+        "compiler_version": "14.2.0",
+        "c_standard": 201112,
+        "sizeof_double": 8,
+        "flt_radix": 2,
+        "dbl_mant_dig": 53,
+        "dbl_max_exp": 1024,
+        "flt_eval_method": 0,
+        "fast_math": false
+      }
+    },
+    "dynamic_soaring_shear": {
+      "config_fnv1a64": "6dad74515574c710",
+      "integrator": "rk4",
+      "controller": "dynamic_soar",
+      "accepted_steps": 120960,
+      "rejected_trial_steps": 0,
+      "duration_s": 604800,
+      "final_radius_au": 1.0005513611841654,
+      "final_speed_km_s": 2.2568849339166173,
+      "specific_energy_delta_j_kg": 1903487.9937918186,
+      "mechanical_energy_delta_j": 22841855.925502777,
+      "force_norm_summary": {
+        "frad_n": {
+          "min_n": 0.0,
+          "max_n": 0.0,
+          "mean_n": 0.0
+        },
+        "fesail_n": {
+          "min_n": 0.012179895763167832,
+          "max_n": 0.03794820710434325,
+          "mean_n": 0.022550369259067473
+        },
+        "fmagsail_n": {
+          "min_n": 0.0,
+          "max_n": 0.0,
+          "mean_n": 0.0
+        },
+        "florentz_n": {
+          "min_n": 0.0,
+          "max_n": 0.0,
+          "mean_n": 0.0
+        }
+      },
+      "enabled_models": {
+        "gravity": false,
+        "j2": false,
+        "schwarzschild_1pn": false,
+        "solar_radiation_pressure": false,
+        "parameterized_electric_sail": true,
+        "parameterized_magnetic_sail": false,
+        "lorentz_force": false,
+        "synthetic_shear_layer": true,
+        "synthetic_cme_shell": false
+      },
+      "receipt_schema": "spacewind.receipt.v3",
+      "build": {
+        "compiler_id": "gcc",
+        "compiler_version": "14.2.0",
+        "c_standard": 201112,
+        "sizeof_double": 8,
+        "flt_radix": 2,
+        "dbl_mant_dig": 53,
+        "dbl_max_exp": 1024,
+        "flt_eval_method": 0,
+        "fast_math": false
+      }
+    },
+    "cme_encounter": {
+      "config_fnv1a64": "12012c750293d68e",
+      "integrator": "dopri54",
+      "controller": "sun_cone",
+      "accepted_steps": 2049,
+      "rejected_trial_steps": 905,
+      "duration_s": 864000,
+      "final_radius_au": 1.000748282023143,
+      "final_speed_km_s": 29.80422881694,
+      "specific_energy_delta_j_kg": 1245420.356718123,
+      "mechanical_energy_delta_j": 14945044.28061676,
+      "force_norm_summary": {
+        "frad_n": {
+          "min_n": 0.0004491676104375825,
+          "max_n": 0.0008534837791016075,
+          "mean_n": 0.00046936135228785086
+        },
+        "fesail_n": {
+          "min_n": 0.002519394913741638,
+          "max_n": 0.005468330979614029,
+          "mean_n": 0.003636855951657155
+        },
+        "fmagsail_n": {
+          "min_n": 0.0,
+          "max_n": 0.0,
+          "mean_n": 0.0
+        },
+        "florentz_n": {
+          "min_n": 0.0,
+          "max_n": 0.0,
+          "mean_n": 0.0
+        }
+      },
+      "enabled_models": {
+        "gravity": true,
+        "j2": false,
+        "schwarzschild_1pn": true,
+        "solar_radiation_pressure": true,
+        "parameterized_electric_sail": true,
+        "parameterized_magnetic_sail": false,
+        "lorentz_force": false,
+        "synthetic_shear_layer": false,
+        "synthetic_cme_shell": true
+      },
+      "receipt_schema": "spacewind.receipt.v3",
+      "build": {
+        "compiler_id": "gcc",
+        "compiler_version": "14.2.0",
+        "c_standard": 201112,
+        "sizeof_double": 8,
+        "flt_radix": 2,
+        "dbl_mant_dig": 53,
+        "dbl_max_exp": 1024,
+        "flt_eval_method": 0,
+        "fast_math": false
+      }
+    },
+    "magnetic_sail": {
+      "config_fnv1a64": "cca562ccd88bca37",
+      "integrator": "rk4",
+      "controller": "sun_cone",
+      "accepted_steps": 43200,
+      "rejected_trial_steps": 0,
+      "duration_s": 2592000,
+      "final_radius_au": 1.011519300694798,
+      "final_speed_km_s": 29.64016003904162,
+      "specific_energy_delta_j_kg": 5808327.191662729,
+      "mechanical_energy_delta_j": 116166543.83325577,
+      "force_norm_summary": {
+        "frad_n": {
+          "min_n": 0.0,
+          "max_n": 0.0,
+          "mean_n": 0.0
+        },
+        "fesail_n": {
+          "min_n": 0.0,
+          "max_n": 0.0,
+          "mean_n": 0.0
+        },
+        "fmagsail_n": {
+          "min_n": 0.00846493786534408,
+          "max_n": 0.01220314429888691,
+          "mean_n": 0.010255402126903622
+        },
+        "florentz_n": {
+          "min_n": 0.0,
+          "max_n": 0.0,
+          "mean_n": 0.0
+        }
+      },
+      "enabled_models": {
+        "gravity": true,
+        "j2": false,
+        "schwarzschild_1pn": true,
+        "solar_radiation_pressure": false,
+        "parameterized_electric_sail": false,
+        "parameterized_magnetic_sail": true,
+        "lorentz_force": false,
+        "synthetic_shear_layer": false,
+        "synthetic_cme_shell": false
+      },
+      "receipt_schema": "spacewind.receipt.v3",
+      "build": {
+        "compiler_id": "gcc",
+        "compiler_version": "14.2.0",
+        "c_standard": 201112,
+        "sizeof_double": 8,
+        "flt_radix": 2,
+        "dbl_mant_dig": 53,
+        "dbl_max_exp": 1024,
+        "flt_eval_method": 0,
+        "fast_math": false
+      }
+    },
+    "hybrid_glider": {
+      "config_fnv1a64": "ddbc6457b3cc6917",
+      "integrator": "dopri54",
+      "controller": "sun_cone",
+      "accepted_steps": 1385,
+      "rejected_trial_steps": 397,
+      "duration_s": 604800,
+      "final_radius_au": 1.0003437074723058,
+      "final_speed_km_s": 29.812073971126203,
+      "specific_energy_delta_j_kg": 1120752.1317219138,
+      "mechanical_energy_delta_j": 28018803.29304695,
+      "force_norm_summary": {
+        "frad_n": {
+          "min_n": 0.0004643754953032985,
+          "max_n": 0.0012290166419063147,
+          "mean_n": 0.0005181580523455977
+        },
+        "fesail_n": {
+          "min_n": 0.003479429523650118,
+          "max_n": 0.005116140728224706,
+          "mean_n": 0.004151689886548349
+        },
+        "fmagsail_n": {
+          "min_n": 0.0024168316171505025,
+          "max_n": 0.002890985194106164,
+          "mean_n": 0.002626399101933404
+        },
+        "florentz_n": {
+          "min_n": 7.137265639243367e-07,
+          "max_n": 1.3343055213001081e-06,
+          "mean_n": 1.0411409197771595e-06
+        }
+      },
+      "enabled_models": {
+        "gravity": true,
+        "j2": false,
+        "schwarzschild_1pn": true,
+        "solar_radiation_pressure": true,
+        "parameterized_electric_sail": true,
+        "parameterized_magnetic_sail": true,
+        "lorentz_force": true,
+        "synthetic_shear_layer": false,
+        "synthetic_cme_shell": false
+      },
+      "receipt_schema": "spacewind.receipt.v3",
+      "build": {
+        "compiler_id": "gcc",
+        "compiler_version": "14.2.0",
+        "c_standard": 201112,
+        "sizeof_double": 8,
+        "flt_radix": 2,
+        "dbl_mant_dig": 53,
+        "dbl_max_exp": 1024,
+        "flt_eval_method": 0,
+        "fast_math": false
+      }
+    }
+  },
+  "nonclaims": [
+    "This is not a solver for the full nonlinear Einstein field equations.",
+    "Mission-scale electric- and magnetic-sail coefficients are phenomenological until calibrated against multidimensional kinetic calculations or experiment.",
+    "The planar shear and CME shell are synthetic controlled environments, not live space-weather products.",
+    "The local PIC, FDTD, and ideal-MHD solvers are one-dimensional and cannot establish three-dimensional tether or plasma-wing performance.",
+    "A successful synthetic dynamic-soaring trajectory does not prove a realizable vehicle or net energy extraction in the heliosphere."
+  ]
+}

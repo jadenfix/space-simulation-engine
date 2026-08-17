@@ -1,0 +1,30 @@
+#ifndef SPACEWIND_CONSTANTS_H
+#define SPACEWIND_CONSTANTS_H
+
+/* SI constants. Values are exact where the SI defines them exactly. */
+#define SW_PI 3.141592653589793238462643383279502884
+#define SW_TWO_PI (2.0 * SW_PI)
+#define SW_C 299792458.0
+#define SW_G 6.67430e-11
+#define SW_EPS0 8.8541878128e-12
+#define SW_MU0 1.25663706212e-6
+#define SW_KB 1.380649e-23
+#define SW_QE 1.602176634e-19
+#define SW_ME 9.1093837139e-31
+#define SW_MP 1.67262192369e-27
+#define SW_AU 149597870700.0
+#define SW_SOLAR_MASS 1.98847e30
+#define SW_SOLAR_RADIUS 6.957e8
+#define SW_SOLAR_MU 1.32712440018e20
+#define SW_EARTH_MASS 5.9722e24
+#define SW_EARTH_RADIUS 6.371e6
+#define SW_JUPITER_MASS 1.89813e27
+#define SW_JUPITER_RADIUS 6.9911e7
+#define SW_SOLAR_ROTATION_RATE 2.86533e-6
+#define SW_SOLAR_CONSTANT_1AU 1361.0
+#define SW_DAY 86400.0
+#define SW_YEAR 31557600.0
+
+#define SW_ARRAY_LEN(a) (sizeof(a) / sizeof((a)[0]))
+
+#endif
