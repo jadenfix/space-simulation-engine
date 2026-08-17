@@ -1,0 +1,51 @@
+name: bootstrap-spacewind-source
+
+on:
+  push:
+    branches:
+      - agent/bootstrap-spacewind-engine
+    paths:
+      - "bootstrap/**"
+      - ".github/workflows/bootstrap.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out bootstrap branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/bootstrap-spacewind-engine
+          fetch-depth: 0
+
+      - name: Reconstruct and verify source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat bootstrap/part-*.b64 | tr -d '\n\r' | base64 --decode > /tmp/spacewind-source.tar.gz
+          echo "5435579c29ebe18b2e207806d92b1d97bb124c9568c6fd9e9c4fa88b39a9679f  /tmp/spacewind-source.tar.gz" | sha256sum --check -
+          mkdir -p /tmp/spacewind-source
+          tar -xzf /tmp/spacewind-source.tar.gz -C /tmp/spacewind-source
+          test -f /tmp/spacewind-source/repo/README.md
+          test -f /tmp/spacewind-source/repo/Makefile
+          test -f /tmp/spacewind-source/repo/src/main.c
+
+      - name: Install validated source tree on branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -a /tmp/spacewind-source/repo/. .
+          rm -rf bootstrap
+          rm -f .github/workflows/bootstrap.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No source changes to commit"
+            exit 0
+          fi
+          git commit -m "feat: bootstrap native space simulation engine"
+          git push origin HEAD:agent/bootstrap-spacewind-engine
