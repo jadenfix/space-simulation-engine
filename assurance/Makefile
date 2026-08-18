@@ -16,7 +16,9 @@ LIBSRC := \
 	src/charge_deposition.c
 LIBOBJ := $(patsubst src/%.c,$(BUILD)/%.o,$(LIBSRC))
 TEST_NAMES := assurance invariants experiment evidence field_ledger charge_deposition
-TEST_BINS := $(addprefix $(BUILD)/test_,$(TEST_NAMES))
+UNIT_TEST_BINS := $(addprefix $(BUILD)/test_,$(TEST_NAMES))
+INTEGRATION_TEST_BIN := $(BUILD)/test_pic_transport_integration
+TEST_BINS := $(UNIT_TEST_BINS) $(INTEGRATION_TEST_BIN)
 
 .PHONY: all test clean asan ubsan
 all: $(TEST_BINS)
@@ -29,6 +31,11 @@ $(BUILD)/%.o: src/%.c | $(BUILD)
 
 $(BUILD)/test_%: tests/test_%.c $(LIBOBJ) | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $< $(LIBOBJ) $(LDLIBS) -o $@
+
+$(INTEGRATION_TEST_BIN): tests/test_pic_transport_integration.c $(LIBOBJ) ../src/plasma.c ../src/math3.c | $(BUILD)
+	$(CC) $(CPPFLAGS) -I../include $(CFLAGS) $(LDFLAGS) \
+		tests/test_pic_transport_integration.c ../src/plasma.c ../src/math3.c \
+		$(LIBOBJ) $(LDLIBS) -o $@
 
 test: $(TEST_BINS) | $(OUTPUT)
 	@set -e; for test_bin in $(TEST_BINS); do ./$$test_bin; done

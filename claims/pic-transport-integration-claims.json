@@ -1,0 +1,46 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-pic-transport-integration",
+  "version": "0.1.0",
+  "claims": [
+    {
+      "id": "SW-PI-0001",
+      "type": "finite_check",
+      "statement": "The independent assurance test reconciles root nodal CIC charge with the cell-centered reference through an explicit half-cell topology transform and rejects the untransformed comparison.",
+      "evidence": [
+        "assurance/tests/test_pic_transport_integration.c",
+        "docs/PIC_TRANSPORT_INTEGRATION.md"
+      ],
+      "nonclaims": [
+        "Grid-topology agreement does not establish a correct electromagnetic current deposition."
+      ]
+    },
+    {
+      "id": "SW-PI-0002",
+      "type": "finite_check",
+      "statement": "For the bounded root electrostatic PIC sequence, independent initial and final charge states agree with the engine and admit a periodic current satisfying the declared continuity operator at every checked step.",
+      "evidence": [
+        "assurance/tests/test_pic_transport_integration.c",
+        "assurance/output/pic_transport_integration_receipt.json"
+      ],
+      "nonclaims": [
+        "The root electrostatic PIC solver does not consume this current in an electromagnetic field update.",
+        "The finite sequence is not a plasma-wing force validation."
+      ]
+    },
+    {
+      "id": "SW-PI-0003",
+      "type": "open_problem",
+      "statement": "Replace nearest-image trajectory recovery with explicit unwrapped transport and connect a local charge-conserving current to a multidimensional electromagnetic field update.",
+      "required_evidence": [
+        "explicit particle boundary-crossing ledger",
+        "local trajectory current deposition",
+        "Ampere-Maxwell field update",
+        "Gauss-law and magnetic-divergence preservation",
+        "particle plus field energy closure",
+        "field plus mechanical momentum closure",
+        "Maxwell-stress and particle-momentum agreement"
+      ]
+    }
+  ]
+}
