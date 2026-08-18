@@ -25,7 +25,7 @@ LIBRARY := $(BUILD_DIR)/libspacewind.a
 BINARY := $(BUILD_DIR)/spacewind
 TEST_BINARY := $(BUILD_DIR)/spacewind_tests
 
-.PHONY: all clean test asan ubsan examples validate validate-all package format-check
+.PHONY: all clean test asan ubsan examples assurance assurance-asan validate validate-all package format-check
 
 all: $(BINARY) $(TEST_BINARY)
 
@@ -67,6 +67,12 @@ examples: $(BINARY)
 	$(BINARY) poisson output/gravity_grid.csv
 	$(BINARY) simulate configs/baseline_1au.cfg output/baseline.csv output/baseline.receipt.json
 	$(BINARY) simulate configs/hybrid_glider.cfg output/hybrid_glider.csv output/hybrid_glider.receipt.json
+
+assurance:
+	$(MAKE) -C assurance clean test
+
+assurance-asan:
+	$(MAKE) -C assurance asan
 
 validate:
 	./scripts/validate.sh

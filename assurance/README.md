@@ -23,6 +23,11 @@ biased force experiments, and over-promoted scientific claims fail closed.
 ### Conservation and invariants
 
 - Mass, charge, momentum, and energy control-volume ledgers.
+- Cell-local and domain-global discrete charge-continuity audits.
+- Discrete Gauss-law residuals in physical charge-density units.
+- Staggered-grid magnetic-divergence audits.
+- Poynting-energy and electromagnetic-momentum ledgers.
+- Maxwell-stress traction and rotational-covariance checks.
 - Minkowski four-velocity normalization.
 - Lorentz-force decomposition and the zero-work magnetic-force identity.
 - Electromagnetic field energy, Poynting flux, and the two field invariants.
@@ -30,6 +35,11 @@ biased force experiments, and over-promoted scientific claims fail closed.
 - Photon momentum and plasma momentum-flux upper bounds.
 - Kepler energy, angular momentum, eccentricity, and apsis invariants.
 - N-body center-of-mass, momentum, angular momentum, and total-energy audits.
+
+The field-and-particle ledger is documented in
+[`docs/FIELD_AND_PARTICLE_LEDGER.md`](../docs/FIELD_AND_PARTICLE_LEDGER.md).
+Its manufactured tests deliberately corrupt charge, magnetic flux, field
+energy, and field momentum to verify that each gate rejects the fault.
 
 ### Cross-environment validity
 
@@ -57,16 +67,21 @@ level.
 
 A cycle audit requires:
 
-- state closure in position, velocity, stored energy, and controller phase;
+- closure in position, velocity, and controller phase;
+- explicit accounting for the change in stored energy rather than requiring it
+  to return to its starting value;
 - the moving-medium identity
 
   `source work = craft work + relative-flow dissipation`;
 
-- actuator, thermal, and numerical energy accounting;
+- actuator, thermal, numerical, and stored-energy accounting;
 - a net-gain interval whose lower bound remains positive;
 - an evidence level high enough for the requested promotion.
 
 A numerical closed cycle can pass while physical promotion remains false.
+Stored-energy gain is an output of the energy ledger; counting it again as a
+state-closure error would make every genuinely positive charging or storage
+cycle fail by construction.
 
 ### Controlled force reversal
 
@@ -83,9 +98,14 @@ and zero-command measurements. It reports:
   sign-flip audit for larger series;
 - independent-replication consistency.
 
+Independent replications must agree in sign and stay within the declared
+relative heterogeneity limit. Confidence-interval compatibility receives only
+the same predeclared heterogeneity allowance; it is not relaxed after seeing
+the desired result.
+
 This is designed to reject thermal drift, facility bias, nonreversing drag,
-serial correlation, and opposite-sign replications before a local transverse
-force is promoted.
+serial correlation, opposite-sign replications, and materially inconsistent
+independent effects before a local transverse force is promoted.
 
 ### Claim tiers
 
@@ -102,12 +122,26 @@ propulsion claim without robust closed-cycle, deployment, and flight evidence.
 
 ## Build and test
 
+CMake and CTest:
+
 ```sh
 cmake -S assurance -B build-assurance \
   -DCMAKE_BUILD_TYPE=Release \
   -DSPACEWIND_ASSURANCE_WERROR=ON
 cmake --build build-assurance
 ctest --test-dir build-assurance --output-on-failure
+```
+
+Standalone Make build:
+
+```sh
+make -C assurance clean test
+```
+
+From the repository root:
+
+```sh
+make assurance
 ```
 
 Sanitizers:
