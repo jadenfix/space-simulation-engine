@@ -1,0 +1,177 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-assurance",
+  "version": "0.1.0",
+  "claims": [
+    {
+      "id": "SWA-E001",
+      "type": "equation_implementation",
+      "statement": "The assurance kernel implements runtime SI-dimension algebra and refuses addition of quantities with unequal base-dimension exponent vectors.",
+      "evidence": [
+        "assurance/include/spacewind/assurance.h",
+        "assurance/src/core.c",
+        "assurance/tests/test_assurance.c"
+      ],
+      "nonclaims": [
+        "Dimensional homogeneity does not establish that an equation is physically correct."
+      ]
+    },
+    {
+      "id": "SWA-E002",
+      "type": "equation_implementation",
+      "statement": "The assurance kernel implements outward-rounded scalar interval addition, subtraction, multiplication, division, and square root with fail-closed domain checks.",
+      "evidence": [
+        "assurance/src/core.c",
+        "assurance/tests/test_assurance.c"
+      ],
+      "nonclaims": [
+        "Scalar interval arithmetic does not represent arbitrary correlated uncertainty without additional dependency modeling."
+      ]
+    },
+    {
+      "id": "SWA-E003",
+      "type": "equation_implementation",
+      "statement": "Separate mass, charge, momentum, and energy control-volume residuals are computed from declared initial, final, source, sink, and boundary terms.",
+      "evidence": [
+        "assurance/src/core.c",
+        "docs/ASSURANCE_AND_FALSIFICATION.md"
+      ],
+      "nonclaims": [
+        "A closed ledger can omit a real physical channel if the control volume is incorrectly specified."
+      ]
+    },
+    {
+      "id": "SWA-E004",
+      "type": "equation_implementation",
+      "statement": "The invariant layer computes Minkowski four-velocity normalization, Lorentz-force power decomposition, electromagnetic field invariants, Poynting flux, Parker-wind flux identities, orbit invariants, and N-body aggregate invariants.",
+      "evidence": [
+        "assurance/include/spacewind/invariants.h",
+        "assurance/src/invariants.c",
+        "assurance/tests/test_invariants.c"
+      ],
+      "nonclaims": [
+        "These identities do not solve the nonlinear Einstein equations or validate a plasma-wing force law."
+      ]
+    },
+    {
+      "id": "SWA-E005",
+      "type": "equation_implementation",
+      "statement": "Photon and plasma force requests are checked against explicit momentum-source upper bounds derived from declared irradiance or mass flux and interaction area.",
+      "evidence": [
+        "assurance/src/invariants.c",
+        "assurance/tests/test_invariants.c"
+      ],
+      "nonclaims": [
+        "The effective plasma interaction area and momentum multiplier remain model inputs requiring kinetic or experimental support."
+      ]
+    },
+    {
+      "id": "SWA-E006",
+      "type": "equation_implementation",
+      "statement": "A twelve-coordinate similarity signature constrains chamber-to-space and local-to-mission reuse by log-space tolerance and evidence level.",
+      "evidence": [
+        "assurance/src/physics.c",
+        "assurance/README.md",
+        "docs/ASSURANCE_AND_FALSIFICATION.md"
+      ],
+      "nonclaims": [
+        "Matching the declared coordinates does not prove that all relevant dimensionless physics has been included."
+      ]
+    },
+    {
+      "id": "SWA-E007",
+      "type": "equation_implementation",
+      "statement": "The closed-cycle audit separately evaluates state closure, moving-medium work identity, actuator and thermal cost, numerical residual, uncertainty interval, and evidence sufficiency.",
+      "evidence": [
+        "assurance/src/physics.c",
+        "assurance/tests/test_assurance.c"
+      ],
+      "nonclaims": [
+        "A synthetic numerical closed cycle is not chamber or flight evidence."
+      ]
+    },
+    {
+      "id": "SWA-E008",
+      "type": "equation_implementation",
+      "statement": "The force-reversal protocol estimates reversible effect, common-mode bias, reversal asymmetry, serial correlation, effective sample size, zero-control drift, an empirical-Bernstein interval, and a sign-flip randomization p-value.",
+      "evidence": [
+        "assurance/include/spacewind/experiment.h",
+        "assurance/src/experiment.c",
+        "assurance/tests/test_experiment.c",
+        "docs/PLASMA_CHAMBER_PROTOCOL.md"
+      ],
+      "nonclaims": [
+        "The statistical checks rely on their declared boundedness, exchangeability, and drift assumptions.",
+        "A passing synthetic test is not an experimental force measurement."
+      ]
+    },
+    {
+      "id": "SWA-E009",
+      "type": "equation_implementation",
+      "statement": "Scientific promotion is represented as a fail-closed five-tier gate from software finite check through flight propulsion, with missing evidence recorded as explicit blocker bits.",
+      "evidence": [
+        "assurance/include/spacewind/evidence.h",
+        "assurance/src/evidence.c",
+        "assurance/tests/test_evidence.c"
+      ],
+      "nonclaims": [
+        "The existence of a gate does not supply the evidence required to pass it."
+      ]
+    },
+    {
+      "id": "SWA-F001",
+      "type": "finite_check",
+      "statement": "The assurance test suite exercises interval containment, dimensional rejection, conservation leak detection, convergence acceptance and rejection, rotational and scaling metamorphisms, relativistic and electromagnetic invariants, force bounds, chamber-reversal failure modes, replication, claim-tier progression, and deterministic replay on bounded generated cases.",
+      "evidence": [
+        "assurance/tests/test_assurance.c",
+        "assurance/tests/test_invariants.c",
+        "assurance/tests/test_experiment.c",
+        "assurance/tests/test_evidence.c",
+        ".github/workflows/assurance.yml"
+      ],
+      "nonclaims": [
+        "Passing bounded tests is not a universal proof of solver correctness.",
+        "CI success is not physical validation."
+      ]
+    },
+    {
+      "id": "SWA-M001",
+      "type": "model_result",
+      "statement": "The current project-level claim receipt is intentionally capped below chamber-local-force and propulsion tiers because reversible replicated chamber force, robust hardware closed-cycle, deployment, and flight evidence are absent.",
+      "evidence": [
+        "assurance/tests/test_evidence.c",
+        "assurance/output/current_claim_gate.json"
+      ],
+      "nonclaims": [
+        "This cap does not assert that the concept is impossible.",
+        "It states that the stronger evidence has not yet been supplied."
+      ]
+    },
+    {
+      "id": "SWA-O001",
+      "type": "open_problem",
+      "statement": "Demonstrate a reversible transverse plasma force under a preregistered, similarity-qualified, independently replicated chamber protocol with closed momentum, charge, electrical-energy, thermal, and structural ledgers.",
+      "required_evidence": [
+        "calibrated raw chamber measurements",
+        "positive, negative, and zero command blocks",
+        "common-mode and drift controls",
+        "control-volume momentum closure",
+        "finite-power voltage sustainment",
+        "independent facility replication"
+      ]
+    },
+    {
+      "id": "SWA-O002",
+      "type": "open_problem",
+      "statement": "Demonstrate robust positive net gain over a complete spacecraft control cycle using a force law inside its validated similarity and uncertainty envelope.",
+      "required_evidence": [
+        "closed spacecraft state",
+        "moving-medium work identity",
+        "actuator and thermal cost",
+        "uncertainty interval with positive lower bound",
+        "deployment and fault-tolerance evidence",
+        "flight demonstration"
+      ]
+    }
+  ]
+}
