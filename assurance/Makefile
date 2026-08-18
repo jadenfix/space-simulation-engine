@@ -12,9 +12,10 @@ LIBSRC := \
 	src/invariants.c \
 	src/experiment.c \
 	src/evidence.c \
-	src/field_ledger.c
+	src/field_ledger.c \
+	src/charge_deposition.c
 LIBOBJ := $(patsubst src/%.c,$(BUILD)/%.o,$(LIBSRC))
-TEST_NAMES := assurance invariants experiment evidence field_ledger
+TEST_NAMES := assurance invariants experiment evidence field_ledger charge_deposition
 TEST_BINS := $(addprefix $(BUILD)/test_,$(TEST_NAMES))
 
 .PHONY: all test clean asan ubsan
