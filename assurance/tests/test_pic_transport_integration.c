@@ -25,27 +25,9 @@ static void check_true(int condition, const char *name) {
     }
 }
 
-static double wrap_periodic(double x, double length) {
-    double wrapped = fmod(x, length);
-    if (wrapped < 0.0) {
-        wrapped += length;
-    }
-    return wrapped;
-}
-
-static double nearest_periodic_displacement(
-    double old_unwrapped,
-    double new_wrapped,
-    double length
-) {
-    const double old_wrapped = wrap_periodic(old_unwrapped, length);
-    double displacement = new_wrapped - old_wrapped;
-    if (displacement > 0.5 * length) {
-        displacement -= length;
-    } else if (displacement < -0.5 * length) {
-        displacement += length;
-    }
-    return displacement;
+static int near(double a, double b, double relative, double absolute) {
+    return fabs(a - b) <=
+           fmax(absolute, relative * fmax(fabs(a), fabs(b)));
 }
 
 static swa_periodic_cic_transport_input transport_input(
@@ -114,6 +96,10 @@ static void test_grid_staggering_contract(void) {
     pic.particles[0].macro_weight = 1.0;
     pic.particles[1].macro_weight = 1.3;
     pic.particles[2].macro_weight = 0.8;
+    check_true(sw_pic1d_sync_unwrapped_positions(&pic),
+               "manual root positions synchronize unwrapped ledger");
+    check_true(sw_pic1d_unwrapped_positions_consistent(&pic, 1.0e-15),
+               "manual root positions are ledger-consistent");
     sw_pic1d_deposit_charge(&pic);
 
     for (i = 0U; i < PARTICLES; ++i) {
@@ -176,10 +162,58 @@ static void test_grid_staggering_contract(void) {
     sw_pic1d_destroy(&pic);
 }
 
+static void test_explicit_multiwrap_ledger(void) {
+    sw_pic1d pic;
+    const double length = 8.0;
+    const double step = 0.25;
+    const double initial = 1.25;
+    const double displacement = 3.5 * length;
+
+    if (!sw_pic1d_init(&pic, 8U, 1U, length, step)) {
+        check_true(0, "initialize explicit multiwrap PIC");
+        return;
+    }
+    check_true(1, "initialize explicit multiwrap PIC");
+    pic.particles[0].position_m = sw_v3(initial, 0.0, 0.0);
+    pic.particles[0].velocity_m_s =
+        sw_v3(displacement / step, 0.0, 0.0);
+    pic.particles[0].charge_c = 0.0;
+    pic.particles[0].mass_kg = 1.0;
+    pic.particles[0].macro_weight = 1.0;
+    check_true(sw_pic1d_sync_unwrapped_positions(&pic),
+               "multiwrap initial position synchronizes");
+    sw_pic1d_step(&pic);
+    check_true(
+        near(pic.previous_unwrapped_position_x_m[0],
+             initial, 0.0, 1.0e-14),
+        "previous unwrapped position records accepted start"
+    );
+    check_true(
+        near(pic.unwrapped_position_x_m[0],
+             initial + displacement, 1.0e-15, 1.0e-13),
+        "unwrapped position retains three and a half turns"
+    );
+    check_true(
+        near(pic.particles[0].position_m.x,
+             5.25, 1.0e-15, 1.0e-13),
+        "wrapped state remains inside periodic domain"
+    );
+    check_true(sw_pic1d_unwrapped_positions_consistent(&pic, 1.0e-12),
+               "multiwrap unwrapped and wrapped states agree");
+
+    pic.particles[0].position_m.x += 0.5;
+    check_true(!sw_pic1d_unwrapped_positions_consistent(&pic, 1.0e-12),
+               "external wrapped-position mutation is detected");
+    check_true(sw_pic1d_sync_unwrapped_positions(&pic),
+               "explicit synchronization repairs external mutation");
+    check_true(sw_pic1d_unwrapped_positions_consistent(&pic, 1.0e-12),
+               "resynchronized state is consistent");
+    sw_pic1d_destroy(&pic);
+}
+
 static void test_root_pic_transport_sequence(void) {
     enum { CELLS = 32, PARTICLES = 512, STEPS = 100 };
     sw_pic1d pic;
-    double unwrapped[PARTICLES];
     double reference_initial_position[PARTICLES];
     double reference_final_position[PARTICLES];
     double effective_charge[PARTICLES];
@@ -212,12 +246,15 @@ static void test_root_pic_transport_sequence(void) {
     check_true(1, "initialize root PIC integration sequence");
     sw_pic1d_quiet_start(&pic, -SW_QE, SW_ME,
                          1.0e6, 1.0e5, 0.01, 1U);
+    check_true(pic.unwrapped_positions_initialized,
+               "quiet start initializes unwrapped transport");
+    check_true(sw_pic1d_unwrapped_positions_consistent(&pic, 1.0e-15),
+               "quiet-start wrapped and unwrapped states agree");
     sw_pic1d_deposit_charge(&pic);
     sw_pic1d_solve_poisson_spectral(&pic);
     initial_energy = sw_pic1d_kinetic_energy_j(&pic) +
                      sw_pic1d_field_energy_j(&pic);
     for (p = 0U; p < PARTICLES; ++p) {
-        unwrapped[p] = pic.particles[p].position_m.x;
         effective_charge[p] = pic.particles[p].charge_c *
                               pic.particles[p].macro_weight;
     }
@@ -232,23 +269,17 @@ static void test_root_pic_transport_sequence(void) {
         memcpy(root_initial_density,
                pic.charge_density_c_m3,
                sizeof(root_initial_density));
-        for (p = 0U; p < PARTICLES; ++p) {
-            reference_initial_position[p] =
-                unwrapped[p] + 0.5 * pic.dx_m;
-        }
 
         sw_pic1d_step(&pic);
-
+        check_true(sw_pic1d_unwrapped_positions_consistent(&pic, 1.0e-10),
+                   "accepted PIC step preserves unwrapped consistency");
         for (p = 0U; p < PARTICLES; ++p) {
-            const double displacement =
-                nearest_periodic_displacement(
-                    unwrapped[p],
-                    pic.particles[p].position_m.x,
-                    pic.length_m
-                );
-            unwrapped[p] += displacement;
+            reference_initial_position[p] =
+                pic.previous_unwrapped_position_x_m[p] +
+                0.5 * pic.dx_m;
             reference_final_position[p] =
-                unwrapped[p] + 0.5 * pic.dx_m;
+                pic.unwrapped_position_x_m[p] +
+                0.5 * pic.dx_m;
         }
         input = transport_input(
             CELLS, PARTICLES, pic.length_m, pic.step_s,
@@ -327,8 +358,8 @@ static void test_root_pic_transport_sequence(void) {
     check_true(isfinite(initial_energy) && isfinite(final_energy) &&
                isfinite(relative_energy_change),
                "root PIC sequence energy diagnostic is finite");
-    check_true(maximum_unwrapped_displacement_cells < 0.01,
-               "nearest-image unwrapping remains unambiguous");
+    check_true(isfinite(maximum_unwrapped_displacement_cells),
+               "explicit unwrapped displacement diagnostic is finite");
     check_true(sequence_passes,
                "complete root PIC transport sequence passes");
 
@@ -339,10 +370,11 @@ static void test_root_pic_transport_sequence(void) {
             fprintf(
                 fp,
                 "{\n"
-                "  \"schema\": \"spacewind.pic-transport-integration/v1\",\n"
+                "  \"schema\": \"spacewind.pic-transport-integration/v2\",\n"
                 "  \"steps\": %u,\n"
                 "  \"cells\": %u,\n"
                 "  \"particles\": %u,\n"
+                "  \"uses_explicit_unwrapped_transport\": true,\n"
                 "  \"worst_initial_density_error_C_m3\": %.17g,\n"
                 "  \"worst_final_density_error_C_m3\": %.17g,\n"
                 "  \"worst_density_relative_to_background\": %.17g,\n"
@@ -351,7 +383,7 @@ static void test_root_pic_transport_sequence(void) {
                 "  \"maximum_unwrapped_displacement_cells\": %.17g,\n"
                 "  \"relative_energy_change_diagnostic\": %.17g,\n"
                 "  \"passes\": %s,\n"
-                "  \"nonclaim\": \"this cross-layer check validates charge topology and continuity bookkeeping for the bounded electrostatic PIC sequence; it does not establish electromagnetic field-energy closure or plasma-wing thrust\"\n"
+                "  \"nonclaim\": \"this cross-layer check validates charge topology, explicit periodic transport, and continuity bookkeeping for the bounded electrostatic PIC sequence; it does not establish electromagnetic field-energy closure or plasma-wing thrust\"\n"
                 "}\n",
                 (unsigned)STEPS,
                 (unsigned)CELLS,
@@ -374,6 +406,7 @@ static void test_root_pic_transport_sequence(void) {
 
 int main(void) {
     test_grid_staggering_contract();
+    test_explicit_multiwrap_ledger();
     test_root_pic_transport_sequence();
     printf(
         "spacewind PIC transport integration: %zu checks, %zu failures, hash=%016llx\n",

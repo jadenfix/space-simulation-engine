@@ -1,7 +1,7 @@
 {
   "schema": "spacewind.claims.v1",
   "artifact": "spacewind-pic-transport-integration",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "claims": [
     {
       "id": "SW-PI-0001",
@@ -17,8 +17,33 @@
     },
     {
       "id": "SW-PI-0002",
+      "type": "equation_implementation",
+      "statement": "The root electrostatic PIC state records previous and final unwrapped particle positions and reconstructs wrapped positions from the unwrapped transport state after every accepted drift.",
+      "evidence": [
+        "include/spacewind/plasma.h",
+        "src/plasma.c",
+        "docs/PIC_TRANSPORT_INTEGRATION.md#2-explicit-periodic-transport-state"
+      ],
+      "nonclaims": [
+        "Storing unwrapped trajectories does not itself deposit electromagnetic current.",
+        "External manual position changes require explicit synchronization."
+      ]
+    },
+    {
+      "id": "SW-PI-0003",
       "type": "finite_check",
-      "statement": "For the bounded root electrostatic PIC sequence, independent initial and final charge states agree with the engine and admit a periodic current satisfying the declared continuity operator at every checked step.",
+      "statement": "A bounded multi-wrap test preserves three and a half domain traversals in the unwrapped state while retaining a consistent wrapped particle position.",
+      "evidence": [
+        "assurance/tests/test_pic_transport_integration.c:test_explicit_multiwrap_ledger"
+      ],
+      "nonclaims": [
+        "The zero-charge kinematic test is not a plasma interaction result."
+      ]
+    },
+    {
+      "id": "SW-PI-0004",
+      "type": "finite_check",
+      "statement": "For the bounded root electrostatic PIC sequence, independent initial and final charge states agree with the engine and admit a periodic current satisfying the declared continuity operator at every checked step using explicit unwrapped transport.",
       "evidence": [
         "assurance/tests/test_pic_transport_integration.c",
         "assurance/output/pic_transport_integration_receipt.json"
@@ -29,11 +54,10 @@
       ]
     },
     {
-      "id": "SW-PI-0003",
+      "id": "SW-PI-0005",
       "type": "open_problem",
-      "statement": "Replace nearest-image trajectory recovery with explicit unwrapped transport and connect a local charge-conserving current to a multidimensional electromagnetic field update.",
+      "statement": "Deposit a local charge-conserving trajectory current from the explicit unwrapped path and connect it to a multidimensional electromagnetic field update.",
       "required_evidence": [
-        "explicit particle boundary-crossing ledger",
         "local trajectory current deposition",
         "Ampere-Maxwell field update",
         "Gauss-law and magnetic-divergence preservation",

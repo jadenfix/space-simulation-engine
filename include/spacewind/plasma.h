@@ -39,6 +39,9 @@ typedef struct {
     double *electric_field_v_m;
     double *potential_v;
     double neutralizing_background_c_m3;
+    double *previous_unwrapped_position_x_m;
+    double *unwrapped_position_x_m;
+    bool unwrapped_positions_initialized;
 } sw_pic1d;
 
 bool sw_pic1d_init(
@@ -58,6 +61,11 @@ void sw_pic1d_quiet_start(
     double drift_velocity_m_s,
     double perturbation_fraction,
     unsigned mode_number
+);
+bool sw_pic1d_sync_unwrapped_positions(sw_pic1d *pic);
+bool sw_pic1d_unwrapped_positions_consistent(
+    const sw_pic1d *pic,
+    double absolute_tolerance_m
 );
 void sw_pic1d_deposit_charge(sw_pic1d *pic);
 void sw_pic1d_solve_poisson_spectral(sw_pic1d *pic);

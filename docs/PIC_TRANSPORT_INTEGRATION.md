@@ -44,19 +44,53 @@ then verifies that omitting the transform produces a detectable mismatch.
 This prevents an apparent verification success caused by comparing different
 staggerings as though they were the same discretization.
 
-## 2. Unwrapped trajectory recovery
+## 2. Explicit periodic transport state
 
-The root PIC state stores wrapped periodic positions. Current, however, depends
-on transported charge and therefore on the unwrapped path.
+The root PIC state now keeps three separate position concepts:
 
-For the bounded integration scenario, every particle displacement is required
-to remain much smaller than half the domain. The test therefore recovers the
-unique nearest periodic image and accumulates an unwrapped position history.
-The receipt records the maximum displacement in cell widths, and the test fails
-if the nearest-image assumption ceases to be unambiguous.
+- wrapped particle position used for field interpolation and deposition;
+- unwrapped position after the accepted drift;
+- previous unwrapped position before that drift.
 
-A production solver should store unwrapped displacement or boundary-crossing
-counts directly rather than reconstructing them after the step.
+For particle `p` and accepted step `n`,
+
+\[
+\Delta x_p^n
+=
+x_{p,\mathrm{unwrapped}}^{n+1}
+-
+x_{p,\mathrm{unwrapped}}^n.
+\]
+
+The wrapped state is always reconstructed from the unwrapped state:
+
+\[
+x_{p,\mathrm{wrapped}}
+=
+x_{p,\mathrm{unwrapped}}\bmod L.
+\]
+
+This removes the nearest-image assumption from the audit and preserves
+multi-wrap transport even when a particle moves through several periodic
+copies in one accepted step.
+
+The engine exposes:
+
+```c
+bool sw_pic1d_sync_unwrapped_positions(sw_pic1d *pic);
+bool sw_pic1d_unwrapped_positions_consistent(
+    const sw_pic1d *pic,
+    double absolute_tolerance_m
+);
+```
+
+Manual particle initialization must be followed by explicit synchronization.
+If external code later changes wrapped positions without updating the transport
+state, the consistency check fails rather than silently inventing a path.
+
+A dedicated test advances a zero-charge particle by three and a half domain
+lengths in one step. It requires the full unwrapped displacement to survive
+while the wrapped state remains inside the periodic domain.
 
 ## 3. Effective macro-particle charge
 
@@ -78,19 +112,23 @@ For one hundred accepted root PIC steps, the integration test:
 
 1. saves the root initial deposited charge;
 2. advances the actual electrostatic PIC step;
-3. reconstructs the bounded unwrapped particle displacement;
-4. deposits independent initial and final CIC charge;
-5. reconstructs a periodic face current with the correct harmonic component;
-6. audits local and global continuity;
-7. compares both independent charge states against the root charge states;
-8. accumulates the worst density, continuity, and mean-current errors;
-9. records, but does not over-interpret, total electrostatic energy change.
+3. verifies wrapped/unwrapped consistency;
+4. reads the engine's previous and final unwrapped positions directly;
+5. deposits independent initial and final CIC charge;
+6. reconstructs a periodic face current with the correct harmonic component;
+7. audits local and global continuity;
+8. compares both independent charge states against the root charge states;
+9. accumulates the worst density, continuity, and mean-current errors;
+10. records, but does not over-interpret, total electrostatic energy change.
 
 The generated receipt is:
 
 ```text
 assurance/output/pic_transport_integration_receipt.json
 ```
+
+The receipt schema is version 2 and explicitly states that accepted transport
+came from stored unwrapped positions rather than inferred nearest images.
 
 ## 5. What this closes
 
@@ -101,7 +139,10 @@ The audit provides direct evidence that, for the bounded scenario:
   half-cell topology transform;
 - the actual accepted particle motion admits a face current that closes the
   declared finite-volume continuity equation;
-- periodic transported charge is retained through an unwrapped trajectory;
+- periodic transported charge is retained through an explicit unwrapped
+  trajectory;
+- wrapped state remains consistent with its unwrapped source;
+- multi-wrap motion is not aliased into a shorter displacement;
 - the result is deterministic across replayed CI runs.
 
 ## 6. What remains open
@@ -117,9 +158,10 @@ explicit deposited current. Therefore this integration does not yet establish:
 - agreement between Maxwell stress and particle momentum transfer;
 - three-dimensional sheath or plasma-wing force fidelity.
 
-The next solver-level milestone is a multidimensional electromagnetic PIC step
-whose accepted particle trajectory, current deposition, field update, and force
-receipt all share the same discrete control volume and conservation ledger.
+The next solver-level milestone is a local trajectory current deposited from
+the same explicit unwrapped path, followed by a multidimensional
+electromagnetic PIC step whose particle push, field update, and force receipt
+share one discrete control volume and conservation ledger.
 
 ## Scientific boundary
 

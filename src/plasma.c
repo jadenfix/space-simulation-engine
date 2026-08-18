@@ -3,6 +3,7 @@
 
 #include <float.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -71,7 +72,11 @@ bool sw_pic1d_init(
     double length_m,
     double step_s
 ) {
-    if (pic == NULL || grid_count < 4U || particle_count == 0U || length_m <= 0.0 || step_s <= 0.0) {
+    if (pic == NULL || grid_count < 4U ||
+        grid_count > (size_t)INT64_MAX ||
+        particle_count == 0U ||
+        !(length_m > 0.0) || !(step_s > 0.0) ||
+        !isfinite(length_m) || !isfinite(step_s)) {
         return false;
     }
     memset(pic, 0, sizeof(*pic));
@@ -80,12 +85,22 @@ bool sw_pic1d_init(
     pic->length_m = length_m;
     pic->dx_m = length_m / (double)grid_count;
     pic->step_s = step_s;
+    if (!(pic->dx_m > 0.0) || !isfinite(pic->dx_m)) {
+        memset(pic, 0, sizeof(*pic));
+        return false;
+    }
     pic->particles = (sw_particle *)calloc(particle_count, sizeof(sw_particle));
     pic->charge_density_c_m3 = (double *)calloc(grid_count, sizeof(double));
     pic->electric_field_v_m = (double *)calloc(grid_count, sizeof(double));
     pic->potential_v = (double *)calloc(grid_count, sizeof(double));
-    if (pic->particles == NULL || pic->charge_density_c_m3 == NULL
-        || pic->electric_field_v_m == NULL || pic->potential_v == NULL) {
+    pic->previous_unwrapped_position_x_m =
+        (double *)calloc(particle_count, sizeof(double));
+    pic->unwrapped_position_x_m =
+        (double *)calloc(particle_count, sizeof(double));
+    if (pic->particles == NULL || pic->charge_density_c_m3 == NULL ||
+        pic->electric_field_v_m == NULL || pic->potential_v == NULL ||
+        pic->previous_unwrapped_position_x_m == NULL ||
+        pic->unwrapped_position_x_m == NULL) {
         sw_pic1d_destroy(pic);
         return false;
     }
@@ -100,6 +115,8 @@ void sw_pic1d_destroy(sw_pic1d *pic) {
     free(pic->charge_density_c_m3);
     free(pic->electric_field_v_m);
     free(pic->potential_v);
+    free(pic->previous_unwrapped_position_x_m);
+    free(pic->unwrapped_position_x_m);
     memset(pic, 0, sizeof(*pic));
 }
 
@@ -130,8 +147,75 @@ void sw_pic1d_quiet_start(
         pic->particles[i].charge_c = charge_c;
         pic->particles[i].mass_kg = mass_kg;
         pic->particles[i].macro_weight = macro_weight;
+        pic->previous_unwrapped_position_x_m[i] =
+            pic->particles[i].position_m.x;
+        pic->unwrapped_position_x_m[i] =
+            pic->particles[i].position_m.x;
     }
+    pic->unwrapped_positions_initialized = true;
     pic->neutralizing_background_c_m3 = -number_density_m3 * charge_c;
+}
+
+bool sw_pic1d_sync_unwrapped_positions(sw_pic1d *pic) {
+    size_t i;
+    if (pic == NULL || pic->particles == NULL ||
+        pic->previous_unwrapped_position_x_m == NULL ||
+        pic->unwrapped_position_x_m == NULL ||
+        !(pic->length_m > 0.0) || !isfinite(pic->length_m)) {
+        return false;
+    }
+    for (i = 0U; i < pic->particle_count; ++i) {
+        if (!isfinite(pic->particles[i].position_m.x)) {
+            return false;
+        }
+        pic->unwrapped_position_x_m[i] =
+            pic->particles[i].position_m.x;
+        pic->previous_unwrapped_position_x_m[i] =
+            pic->particles[i].position_m.x;
+        pic->particles[i].position_m.x = sw_wrap_periodic(
+            pic->particles[i].position_m.x,
+            pic->length_m
+        );
+    }
+    pic->unwrapped_positions_initialized = true;
+    return true;
+}
+
+bool sw_pic1d_unwrapped_positions_consistent(
+    const sw_pic1d *pic,
+    double absolute_tolerance_m
+) {
+    size_t i;
+    if (pic == NULL || !pic->unwrapped_positions_initialized ||
+        pic->particles == NULL ||
+        pic->previous_unwrapped_position_x_m == NULL ||
+        pic->unwrapped_position_x_m == NULL ||
+        !(pic->length_m > 0.0) || !isfinite(pic->length_m) ||
+        !isfinite(absolute_tolerance_m) ||
+        absolute_tolerance_m < 0.0) {
+        return false;
+    }
+    for (i = 0U; i < pic->particle_count; ++i) {
+        const double wrapped_unwrapped = sw_wrap_periodic(
+            pic->unwrapped_position_x_m[i], pic->length_m
+        );
+        const double wrapped_particle = sw_wrap_periodic(
+            pic->particles[i].position_m.x, pic->length_m
+        );
+        double difference;
+        if (!isfinite(pic->previous_unwrapped_position_x_m[i]) ||
+            !isfinite(pic->unwrapped_position_x_m[i]) ||
+            !isfinite(wrapped_unwrapped) ||
+            !isfinite(wrapped_particle)) {
+            return false;
+        }
+        difference = fabs(wrapped_unwrapped - wrapped_particle);
+        difference = fmin(difference, pic->length_m - difference);
+        if (difference > absolute_tolerance_m) {
+            return false;
+        }
+    }
+    return true;
 }
 
 void sw_pic1d_deposit_charge(sw_pic1d *pic) {
@@ -161,8 +245,12 @@ void sw_pic1d_solve_poisson_spectral(sw_pic1d *pic) {
     memset(pic->potential_v, 0, n * sizeof(double));
 
     for (k = 1U; k < n; ++k) {
-        const long signed_mode = (k <= n / 2U) ? (long)k : (long)k - (long)n;
-        const double wave_number = SW_TWO_PI * (double)signed_mode / pic->length_m;
+        const int64_t signed_mode =
+            k <= n / 2U ?
+            (int64_t)k :
+            (int64_t)k - (int64_t)n;
+        const double wave_number =
+            SW_TWO_PI * (double)signed_mode / pic->length_m;
         double rho_real = 0.0;
         double rho_imag = 0.0;
         double phi_real;
@@ -170,7 +258,9 @@ void sw_pic1d_solve_poisson_spectral(sw_pic1d *pic) {
         double e_real;
         double e_imag;
         for (j = 0U; j < n; ++j) {
-            const double angle = -SW_TWO_PI * (double)(k * j) / (double)n;
+            const double angle =
+                -SW_TWO_PI * (double)k * (double)j /
+                (double)n;
             rho_real += pic->charge_density_c_m3[j] * cos(angle);
             rho_imag += pic->charge_density_c_m3[j] * sin(angle);
         }
@@ -179,9 +269,17 @@ void sw_pic1d_solve_poisson_spectral(sw_pic1d *pic) {
         e_real = wave_number * phi_imag;
         e_imag = -wave_number * phi_real;
         for (j = 0U; j < n; ++j) {
-            const double angle = SW_TWO_PI * (double)(k * j) / (double)n;
-            pic->potential_v[j] += (phi_real * cos(angle) - phi_imag * sin(angle)) / (double)n;
-            pic->electric_field_v_m[j] += (e_real * cos(angle) - e_imag * sin(angle)) / (double)n;
+            const double angle =
+                SW_TWO_PI * (double)k * (double)j /
+                (double)n;
+            pic->potential_v[j] +=
+                (phi_real * cos(angle) -
+                 phi_imag * sin(angle)) /
+                (double)n;
+            pic->electric_field_v_m[j] +=
+                (e_real * cos(angle) -
+                 e_imag * sin(angle)) /
+                (double)n;
         }
     }
 }
@@ -198,14 +296,23 @@ double sw_pic1d_interpolate_electric(const sw_pic1d *pic, double x_m) {
 
 void sw_pic1d_step(sw_pic1d *pic) {
     size_t i;
+    if (pic == NULL ||
+        (!pic->unwrapped_positions_initialized &&
+         !sw_pic1d_sync_unwrapped_positions(pic))) {
+        return;
+    }
     sw_pic1d_deposit_charge(pic);
     sw_pic1d_solve_poisson_spectral(pic);
     for (i = 0U; i < pic->particle_count; ++i) {
         sw_particle *p = &pic->particles[i];
         const double e = sw_pic1d_interpolate_electric(pic, p->position_m.x);
         p->velocity_m_s.x += 0.5 * pic->step_s * p->charge_c * e / p->mass_kg;
+        pic->previous_unwrapped_position_x_m[i] =
+            pic->unwrapped_position_x_m[i];
+        pic->unwrapped_position_x_m[i] +=
+            pic->step_s * p->velocity_m_s.x;
         p->position_m.x = sw_wrap_periodic(
-            p->position_m.x + pic->step_s * p->velocity_m_s.x,
+            pic->unwrapped_position_x_m[i],
             pic->length_m
         );
     }
