@@ -21,36 +21,213 @@ jobs:
           ref: agent/bootstrap-space-simulation-engine
           fetch-depth: 0
 
-      - name: Remove dead helpers exactly once
+      - name: Apply fail-closed assurance repairs
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
 
-          edits = {
-              Path("assurance/src/invariants.c"): [
-                  "static double safe_scale(double x) { return max2(fabs(x), DBL_MIN); }\n",
-                  "static double vector_relative_error(swa_vec3 observed, swa_vec3 expected) {\n"
-                  "    return swa_vnorm(swa_vsub(observed, expected)) /\n"
-                  "           max3(swa_vnorm(observed), swa_vnorm(expected), DBL_MIN);\n"
-                  "}\n",
-              ],
-              Path("assurance/src/experiment.c"): [
-                  "static double min2(double a, double b) { return a < b ? a : b; }\n",
-              ],
-          }
-
-          for path, snippets in edits.items():
+          def remove_once(path: Path, snippet: str) -> None:
               text = path.read_text(encoding="utf-8")
-              for snippet in snippets:
-                  count = text.count(snippet)
-                  if count != 1:
-                      raise SystemExit(
-                          f"expected exactly one occurrence in {path}: {snippet!r}; found {count}"
-                      )
-                  text = text.replace(snippet, "", 1)
-              path.write_text(text, encoding="utf-8")
+              count = text.count(snippet)
+              if count != 1:
+                  raise SystemExit(
+                      f"expected exactly one occurrence in {path}: {snippet!r}; found {count}"
+                  )
+              path.write_text(text.replace(snippet, "", 1), encoding="utf-8")
+
+          def replace_between(path: Path, start: str, end: str, replacement: str) -> None:
+              text = path.read_text(encoding="utf-8")
+              start_count = text.count(start)
+              end_count = text.count(end)
+              if start_count != 1 or end_count != 1:
+                  raise SystemExit(
+                      f"marker mismatch in {path}: start={start_count}, end={end_count}"
+                  )
+              begin = text.index(start)
+              finish = text.index(end, begin)
+              path.write_text(
+                  text[:begin] + replacement.rstrip() + "\n\n" + text[finish:],
+                  encoding="utf-8",
+              )
+
+          remove_once(
+              Path("assurance/src/invariants.c"),
+              "static double safe_scale(double x) { return max2(fabs(x), DBL_MIN); }\n",
+          )
+          remove_once(
+              Path("assurance/src/invariants.c"),
+              "static double vector_relative_error(swa_vec3 observed, swa_vec3 expected) {\n"
+              "    return swa_vnorm(swa_vsub(observed, expected)) /\n"
+              "           max3(swa_vnorm(observed), swa_vnorm(expected), DBL_MIN);\n"
+              "}\n",
+          )
+          remove_once(
+              Path("assurance/src/experiment.c"),
+              "static double min2(double a, double b) { return a < b ? a : b; }\n",
+          )
+
+          replace_between(
+              Path("assurance/src/physics.c"),
+              "int swa_audit_cycle(",
+              "int swa_assess_faults(",
+              r'''int swa_audit_cycle(const swa_cycle_audit *a,double state_tolerance,
+                    double identity_tolerance,swa_cycle_result *o) {
+    double position_error,velocity_error,phase_error;
+    double moving_residual,energy_residual,source_scale,energy_scale;
+    double stored_energy_delta,interval_slack;
+    int nominal_gain_inside_interval;
+    if (a==NULL||o==NULL||!isfinite(state_tolerance)||
+        !isfinite(identity_tolerance)||state_tolerance<0.0||
+        identity_tolerance<0.0||
+        !isfinite(a->start.position_m.x)||!isfinite(a->start.position_m.y)||
+        !isfinite(a->start.position_m.z)||!isfinite(a->end.position_m.x)||
+        !isfinite(a->end.position_m.y)||!isfinite(a->end.position_m.z)||
+        !isfinite(a->start.velocity_mps.x)||!isfinite(a->start.velocity_mps.y)||
+        !isfinite(a->start.velocity_mps.z)||!isfinite(a->end.velocity_mps.x)||
+        !isfinite(a->end.velocity_mps.y)||!isfinite(a->end.velocity_mps.z)||
+        !isfinite(a->start.stored_energy_J)||!isfinite(a->end.stored_energy_J)||
+        !isfinite(a->start.controller_phase_rad)||
+        !isfinite(a->end.controller_phase_rad)||
+        !isfinite(a->craft_work_J)||!isfinite(a->source_flow_work_J)||
+        !isfinite(a->relative_dissipation_J)||!isfinite(a->actuator_energy_J)||
+        !isfinite(a->thermal_loss_J)||!isfinite(a->numerical_residual_J)||
+        !isfinite(a->uncertain_net_gain_J.lo)||
+        !isfinite(a->uncertain_net_gain_J.hi)||
+        a->uncertain_net_gain_J.lo>a->uncertain_net_gain_J.hi||
+        !(a->position_scale_m>0.0)||!(a->velocity_scale_mps>0.0)||
+        !(a->energy_scale_J>0.0)||!(a->phase_scale_rad>0.0)||
+        !isfinite(a->position_scale_m)||!isfinite(a->velocity_scale_mps)||
+        !isfinite(a->energy_scale_J)||!isfinite(a->phase_scale_rad)) return 0;
+    memset(o,0,sizeof(*o));
+    position_error=swa_vnorm(swa_vsub(a->end.position_m,a->start.position_m)) /
+                   a->position_scale_m;
+    velocity_error=swa_vnorm(swa_vsub(a->end.velocity_mps,a->start.velocity_mps)) /
+                   a->velocity_scale_mps;
+    phase_error=fabs(remainder(a->end.controller_phase_rad-
+                               a->start.controller_phase_rad,2.0*SWA_PI)) /
+                a->phase_scale_rad;
+    o->normalized_state_closure=max2(max2(position_error,velocity_error),phase_error);
+
+    moving_residual=a->source_flow_work_J-
+                    (a->craft_work_J+a->relative_dissipation_J);
+    source_scale=max2(max2(fabs(a->source_flow_work_J),fabs(a->craft_work_J)),
+                      max2(fabs(a->relative_dissipation_J),1.0));
+    o->moving_medium_identity_relative=fabs(moving_residual)/source_scale;
+
+    stored_energy_delta=a->end.stored_energy_J-a->start.stored_energy_J;
+    energy_residual=a->craft_work_J-a->actuator_energy_J-a->thermal_loss_J-
+                    a->numerical_residual_J-stored_energy_delta;
+    energy_scale=max2(
+        max2(max2(fabs(a->craft_work_J),fabs(a->actuator_energy_J)),
+             max2(fabs(a->thermal_loss_J),fabs(a->numerical_residual_J))),
+        max2(fabs(stored_energy_delta),a->energy_scale_J));
+    o->energy_identity_relative=fabs(energy_residual)/max2(energy_scale,1.0);
+    o->net_gain_J=a->craft_work_J-a->actuator_energy_J-a->thermal_loss_J;
+    o->net_gain_interval_J=a->uncertain_net_gain_J;
+    interval_slack=identity_tolerance*max2(energy_scale,1.0);
+    nominal_gain_inside_interval=
+        o->net_gain_J>=a->uncertain_net_gain_J.lo-interval_slack&&
+        o->net_gain_J<=a->uncertain_net_gain_J.hi+interval_slack;
+
+    o->state_closed=o->normalized_state_closure<=state_tolerance;
+    o->identity_closed=o->moving_medium_identity_relative<=identity_tolerance&&
+                       o->energy_identity_relative<=identity_tolerance;
+    o->evidence_sufficient=a->evidence_level>=a->required_evidence_level;
+    o->robust_positive_gain=a->uncertain_net_gain_J.lo>0.0&&
+                            nominal_gain_inside_interval;
+    o->numerical_cycle_passes=o->state_closed&&o->identity_closed;
+    o->physical_promotion_passes=o->numerical_cycle_passes&&
+                                 o->evidence_sufficient&&
+                                 o->robust_positive_gain;
+    return 1;
+}''',
+          )
+
+          replace_between(
+              Path("assurance/src/experiment.c"),
+              "int swa_audit_independent_replication(",
+              "int swa_write_reversal_receipt(",
+              r'''int swa_audit_independent_replication(const swa_replication_audit *a,
+                                      swa_replication_result *o) {
+    double minimum_effect = INFINITY;
+    double maximum_effect = -INFINITY;
+    double maximum_lower = -INFINITY;
+    double minimum_upper = INFINITY;
+    double heterogeneity_allowance;
+    swa_kahan pooled = {0.0, 0.0};
+    int sign = 0;
+    size_t finite_replicates = 0U;
+    size_t i;
+    if (a == NULL || o == NULL || a->replicates == NULL ||
+        a->replicate_count < 2U ||
+        !isfinite(a->maximum_relative_heterogeneity) ||
+        !(a->maximum_relative_heterogeneity >= 0.0) ||
+        a->minimum_passing_replicates < 2U ||
+        a->minimum_passing_replicates > a->replicate_count) {
+        return 0;
+    }
+    memset(o, 0, sizeof(*o));
+    o->same_sign = 1;
+    for (i = 0U; i < a->replicate_count; ++i) {
+        const swa_reversal_result *r = &a->replicates[i];
+        int current_sign;
+        if (!r->finite || !isfinite(r->reversed_effect_mean_N) ||
+            !isfinite(r->effect_interval_N.lo) ||
+            !isfinite(r->effect_interval_N.hi) ||
+            r->effect_interval_N.lo > r->effect_interval_N.hi) {
+            o->same_sign = 0;
+            continue;
+        }
+        ++finite_replicates;
+        current_sign = r->reversed_effect_mean_N > 0.0 ? 1 :
+                       (r->reversed_effect_mean_N < 0.0 ? -1 : 0);
+        if (current_sign == 0) {
+            o->same_sign = 0;
+        } else if (sign == 0) {
+            sign = current_sign;
+        } else if (current_sign != sign) {
+            o->same_sign = 0;
+        }
+        if (r->passes) {
+            ++o->passing_replicates;
+        }
+        if (r->reversed_effect_mean_N < minimum_effect) {
+            minimum_effect = r->reversed_effect_mean_N;
+        }
+        if (r->reversed_effect_mean_N > maximum_effect) {
+            maximum_effect = r->reversed_effect_mean_N;
+        }
+        if (r->effect_interval_N.lo > maximum_lower) {
+            maximum_lower = r->effect_interval_N.lo;
+        }
+        if (r->effect_interval_N.hi < minimum_upper) {
+            minimum_upper = r->effect_interval_N.hi;
+        }
+        swa_kahan_add(&pooled, r->reversed_effect_mean_N);
+    }
+    if (finite_replicates == 0U) {
+        o->relative_heterogeneity = INFINITY;
+        return 1;
+    }
+    o->pooled_effect_N = pooled.sum / (double)finite_replicates;
+    o->minimum_lower_bound_N = maximum_lower;
+    o->maximum_upper_bound_N = minimum_upper;
+    o->relative_heterogeneity = (maximum_effect - minimum_effect) /
+                                max2(fabs(o->pooled_effect_N), DBL_MIN);
+    heterogeneity_allowance = a->maximum_relative_heterogeneity *
+                              max2(fabs(o->pooled_effect_N), DBL_MIN);
+    o->interval_overlap = maximum_lower <=
+                          minimum_upper + heterogeneity_allowance;
+    o->passes = finite_replicates == a->replicate_count &&
+                o->passing_replicates >= a->minimum_passing_replicates &&
+                o->same_sign && o->interval_overlap &&
+                o->relative_heterogeneity <=
+                    a->maximum_relative_heterogeneity;
+    return 1;
+}''',
+          )
           PY
           git diff --check
 
@@ -81,7 +258,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assurance/src/invariants.c assurance/src/experiment.c
+          git add assurance/src/invariants.c assurance/src/experiment.c assurance/src/physics.c
           git diff --cached --check
-          git commit -m 'fix: remove dead assurance helpers'
+          git commit -m 'fix: close assurance cycle and replication contracts'
           git push origin HEAD:agent/bootstrap-space-simulation-engine
