@@ -1,0 +1,21 @@
+{
+  "schema": "spacewind.validation-intent.v1",
+  "artifact": "spacewind-fdtd-spectral-crosscheck",
+  "required_workflows": [
+    "native-spacewind",
+    "spacewind-assurance",
+    "spacewind-pde-assurance",
+    "spacewind-robustness-assurance"
+  ],
+  "required_checks": [
+    "Linux GCC warning-as-error build",
+    "Linux Clang warning-as-error build",
+    "macOS ARM64 Clang build",
+    "complete assurance CTest matrix",
+    "deterministic receipt replay",
+    "address and undefined-behavior sanitizers",
+    "static analysis",
+    "root-engine regression"
+  ],
+  "nonclaim": "This validation intent triggers the normal repository matrix. It is not itself evidence that the workflows passed and it does not establish electromagnetic PIC conservation or plasma-wing propulsion."
+}
