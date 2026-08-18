@@ -1,0 +1,24 @@
+{
+  "schema": "spacewind.validation-intent.v1",
+  "artifact": "spacewind-maxwell1d-spectral-reference",
+  "required_workflows": [
+    "native-spacewind",
+    "spacewind-assurance",
+    "spacewind-pde-assurance",
+    "spacewind-robustness-assurance"
+  ],
+  "required_platforms": [
+    "linux-gcc",
+    "linux-clang",
+    "macos-arm64-clang"
+  ],
+  "required_checks": [
+    "strict warning-as-error compilation",
+    "complete CTest execution",
+    "deterministic receipt replay",
+    "address and undefined-behavior sanitizers",
+    "Clang and GCC static analysis",
+    "root-engine regression preservation"
+  ],
+  "nonclaim": "This file declares validation intent and triggers the normal repository matrix; it is not itself evidence that a workflow passed or that plasma-wing propulsion exists."
+}
