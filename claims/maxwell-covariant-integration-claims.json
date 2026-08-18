@@ -1,0 +1,32 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-maxwell-covariant-integration",
+  "version": "0.1.0",
+  "claims": [
+    {
+      "id": "SW-MCI-0001",
+      "type": "independent_implementation_check",
+      "statement": "The global energy and Poynting momentum reported by the periodic Maxwell reference agree with direct integration of an independently constructed electromagnetic stress-energy tensor.",
+      "evidence": [
+        "assurance/tests/test_maxwell_covariant_integration.c",
+        "assurance/output/maxwell_covariant_integration_receipt.json",
+        "docs/MAXWELL_COVARIANT_INTEGRATION.md"
+      ],
+      "nonclaims": [
+        "Agreement between two implemented diagnostics does not establish physical completeness of a plasma model."
+      ]
+    },
+    {
+      "id": "SW-MCI-0002",
+      "type": "finite_check",
+      "statement": "Bounded deterministic tests require field-only four-momentum closure over long vacuum propagation, characteristic energy-momentum reconstruction, source-work closure of the time component, and rejection of invented external four-impulse.",
+      "evidence": [
+        "assurance/tests/test_maxwell_covariant_integration.c"
+      ],
+      "nonclaims": [
+        "The prescribed-current case does not close a self-consistent particle plus field spatial momentum ledger.",
+        "The result is not plasma-wing thrust or propulsion evidence."
+      ]
+    }
+  ]
+}
