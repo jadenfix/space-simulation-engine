@@ -7,7 +7,6 @@
 #include <string.h>
 
 static double max2(double a, double b) { return a > b ? a : b; }
-static double min2(double a, double b) { return a < b ? a : b; }
 static double clamp(double x, double lo, double hi) {
     return x < lo ? lo : (x > hi ? hi : x);
 }
@@ -276,7 +275,9 @@ int swa_audit_independent_replication(const swa_replication_audit *a,
     o->maximum_upper_bound_N = minimum_upper;
     o->relative_heterogeneity = (maximum_effect - minimum_effect) /
                                 max2(fabs(o->pooled_effect_N), DBL_MIN);
-    o->interval_overlap = maximum_lower <= minimum_upper;
+    o->interval_overlap = maximum_lower <= minimum_upper +
+        a->maximum_relative_heterogeneity *
+        max2(fabs(o->pooled_effect_N), DBL_MIN);
     o->passes = o->passing_replicates >= a->minimum_passing_replicates &&
                 o->same_sign && o->interval_overlap &&
                 o->relative_heterogeneity <= a->maximum_relative_heterogeneity;

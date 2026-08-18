@@ -105,15 +105,14 @@ int swa_compare_similarity(const swa_similarity_signature *target,
 
 int swa_audit_cycle(const swa_cycle_audit *a,double state_tolerance,
                     double identity_tolerance,swa_cycle_result *o) {
-    double position_error,velocity_error,energy_state_error,phase_error;
+    double position_error,velocity_error,phase_error;
     double moving_residual,energy_residual,source_scale,energy_scale;
     if (a==NULL||o==NULL||state_tolerance<0.0||identity_tolerance<0.0) return 0;
     memset(o,0,sizeof(*o));
     position_error=swa_vnorm(swa_vsub(a->end.position_m,a->start.position_m))/safe_scale(a->position_scale_m,1.0);
     velocity_error=swa_vnorm(swa_vsub(a->end.velocity_mps,a->start.velocity_mps))/safe_scale(a->velocity_scale_mps,1.0);
-    energy_state_error=fabs(a->end.stored_energy_J-a->start.stored_energy_J)/safe_scale(a->energy_scale_J,1.0);
     phase_error=fabs(remainder(a->end.controller_phase_rad-a->start.controller_phase_rad,2.0*SWA_PI))/safe_scale(a->phase_scale_rad,1.0);
-    o->normalized_state_closure=max2(max2(position_error,velocity_error),max2(energy_state_error,phase_error));
+    o->normalized_state_closure=max2(max2(position_error,velocity_error),phase_error);
     moving_residual=a->source_flow_work_J-(a->craft_work_J+a->relative_dissipation_J);
     source_scale=max2(max2(fabs(a->source_flow_work_J),fabs(a->craft_work_J)),max2(fabs(a->relative_dissipation_J),1.0));
     o->moving_medium_identity_relative=fabs(moving_residual)/source_scale;

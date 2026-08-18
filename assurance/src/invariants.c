@@ -6,16 +6,11 @@
 
 static double max2(double a, double b) { return a > b ? a : b; }
 static double max3(double a, double b, double c) { return max2(max2(a, b), c); }
-static double safe_scale(double x) { return max2(fabs(x), DBL_MIN); }
 static int finite_v3(swa_vec3 v) {
     return isfinite(v.x) && isfinite(v.y) && isfinite(v.z);
 }
 static double relative_error(double observed, double expected) {
     return fabs(observed - expected) / max3(fabs(observed), fabs(expected), DBL_MIN);
-}
-static double vector_relative_error(swa_vec3 observed, swa_vec3 expected) {
-    return swa_vnorm(swa_vsub(observed, expected)) /
-           max3(swa_vnorm(observed), swa_vnorm(expected), DBL_MIN);
 }
 
 double swa_minkowski_norm(swa_four_vector v) {
