@@ -13,12 +13,15 @@ LIBSRC := \
 	src/experiment.c \
 	src/evidence.c \
 	src/field_ledger.c \
-	src/charge_deposition.c
+	src/charge_deposition.c \
+	src/spectral_poisson.c
 LIBOBJ := $(patsubst src/%.c,$(BUILD)/%.o,$(LIBSRC))
-TEST_NAMES := assurance invariants experiment evidence field_ledger charge_deposition
+TEST_NAMES := assurance invariants experiment evidence field_ledger charge_deposition spectral_poisson
 UNIT_TEST_BINS := $(addprefix $(BUILD)/test_,$(TEST_NAMES))
-INTEGRATION_TEST_BIN := $(BUILD)/test_pic_transport_integration
-TEST_BINS := $(UNIT_TEST_BINS) $(INTEGRATION_TEST_BIN)
+PIC_TRANSPORT_TEST_BIN := $(BUILD)/test_pic_transport_integration
+SPECTRAL_INTEGRATION_TEST_BIN := $(BUILD)/test_spectral_poisson_integration
+INTEGRATION_TEST_BINS := $(PIC_TRANSPORT_TEST_BIN) $(SPECTRAL_INTEGRATION_TEST_BIN)
+TEST_BINS := $(UNIT_TEST_BINS) $(INTEGRATION_TEST_BINS)
 
 .PHONY: all test clean asan ubsan
 all: $(TEST_BINS)
@@ -32,9 +35,14 @@ $(BUILD)/%.o: src/%.c | $(BUILD)
 $(BUILD)/test_%: tests/test_%.c $(LIBOBJ) | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $< $(LIBOBJ) $(LDLIBS) -o $@
 
-$(INTEGRATION_TEST_BIN): tests/test_pic_transport_integration.c $(LIBOBJ) ../src/plasma.c ../src/math3.c | $(BUILD)
+$(PIC_TRANSPORT_TEST_BIN): tests/test_pic_transport_integration.c $(LIBOBJ) ../src/plasma.c ../src/math3.c | $(BUILD)
 	$(CC) $(CPPFLAGS) -I../include $(CFLAGS) $(LDFLAGS) \
 		tests/test_pic_transport_integration.c ../src/plasma.c ../src/math3.c \
+		$(LIBOBJ) $(LDLIBS) -o $@
+
+$(SPECTRAL_INTEGRATION_TEST_BIN): tests/test_spectral_poisson_integration.c $(LIBOBJ) ../src/plasma.c ../src/math3.c | $(BUILD)
+	$(CC) $(CPPFLAGS) -I../include $(CFLAGS) $(LDFLAGS) \
+		tests/test_spectral_poisson_integration.c ../src/plasma.c ../src/math3.c \
 		$(LIBOBJ) $(LDLIBS) -o $@
 
 test: $(TEST_BINS) | $(OUTPUT)

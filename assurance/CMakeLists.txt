@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(spacewind_assurance VERSION 0.4.0 LANGUAGES C)
+project(spacewind_assurance VERSION 0.5.0 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -17,6 +17,7 @@ add_library(spacewind_assurance STATIC
     src/evidence.c
     src/field_ledger.c
     src/charge_deposition.c
+    src/spectral_poisson.c
 )
 target_include_directories(spacewind_assurance PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -68,31 +69,38 @@ add_assurance_test(spacewind_assurance_experiment tests/test_experiment.c)
 add_assurance_test(spacewind_assurance_evidence tests/test_evidence.c)
 add_assurance_test(spacewind_assurance_field_ledger tests/test_field_ledger.c)
 add_assurance_test(spacewind_assurance_charge_deposition tests/test_charge_deposition.c)
+add_assurance_test(spacewind_assurance_spectral_poisson tests/test_spectral_poisson.c)
 
 set(SPACEWIND_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
 if(SPACEWIND_ASSURANCE_ENGINE_INTEGRATION AND
    EXISTS ${SPACEWIND_ROOT}/src/plasma.c AND
    EXISTS ${SPACEWIND_ROOT}/src/math3.c AND
    EXISTS ${SPACEWIND_ROOT}/include/spacewind/plasma.h)
-    add_executable(spacewind_assurance_pic_transport_integration
+    function(add_pic_engine_integration_test target source)
+        add_executable(${target}
+            ${source}
+            ${SPACEWIND_ROOT}/src/plasma.c
+            ${SPACEWIND_ROOT}/src/math3.c
+        )
+        target_include_directories(${target} PRIVATE
+            ${SPACEWIND_ROOT}/include
+        )
+        target_link_libraries(${target} PRIVATE spacewind_assurance)
+        spacewind_assurance_strict(${target})
+        add_test(NAME ${target} COMMAND ${target})
+        set_tests_properties(${target} PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+    endfunction()
+
+    add_pic_engine_integration_test(
+        spacewind_assurance_pic_transport_integration
         tests/test_pic_transport_integration.c
-        ${SPACEWIND_ROOT}/src/plasma.c
-        ${SPACEWIND_ROOT}/src/math3.c
     )
-    target_include_directories(spacewind_assurance_pic_transport_integration PRIVATE
-        ${SPACEWIND_ROOT}/include
-    )
-    target_link_libraries(spacewind_assurance_pic_transport_integration PRIVATE
-        spacewind_assurance
-    )
-    spacewind_assurance_strict(spacewind_assurance_pic_transport_integration)
-    add_test(
-        NAME spacewind_assurance_pic_transport_integration
-        COMMAND spacewind_assurance_pic_transport_integration
-    )
-    set_tests_properties(spacewind_assurance_pic_transport_integration PROPERTIES
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    add_pic_engine_integration_test(
+        spacewind_assurance_spectral_poisson_integration
+        tests/test_spectral_poisson_integration.c
     )
 elseif(SPACEWIND_ASSURANCE_ENGINE_INTEGRATION)
-    message(STATUS "Root engine sources unavailable; skipping cross-layer PIC transport integration")
+    message(STATUS "Root engine sources unavailable; skipping cross-layer PIC integration")
 endif()

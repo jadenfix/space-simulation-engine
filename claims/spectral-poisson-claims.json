@@ -1,0 +1,61 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-spectral-poisson-assurance",
+  "version": "0.1.0",
+  "claims": [
+    {
+      "id": "SW-SP-0001",
+      "type": "equation_implementation",
+      "statement": "The assurance kernel independently evaluates periodic Fourier-space Poisson, negative-potential-gradient, and Gauss-law residuals from charge, potential, and electric-field samples.",
+      "evidence": [
+        "assurance/include/spacewind/spectral_poisson.h",
+        "assurance/src/spectral_poisson.c",
+        "docs/SPECTRAL_POISSON_AUDIT.md"
+      ],
+      "nonclaims": [
+        "Spectral operator closure does not validate the physical completeness of the plasma model.",
+        "The direct DFT assurance implementation is not a high-performance production FFT."
+      ]
+    },
+    {
+      "id": "SW-SP-0002",
+      "type": "finite_check",
+      "statement": "Manufactured low-mode systems close while field, potential, charge, zero-mode, harmonic-field, and Nyquist corruptions are rejected by bounded deterministic tests.",
+      "evidence": [
+        "assurance/tests/test_spectral_poisson.c",
+        "assurance/output/spectral_poisson_receipt.json"
+      ],
+      "nonclaims": [
+        "The bounded modes and grids are not a universal convergence theorem."
+      ]
+    },
+    {
+      "id": "SW-SP-0003",
+      "type": "finite_check",
+      "statement": "The independent audit is applied to the actual root electrostatic PIC spectral solver, including manufactured modes, nonneutral input, the collocated Nyquist boundary, deliberate field corruption, and an evolved PIC state.",
+      "evidence": [
+        "assurance/tests/test_spectral_poisson_integration.c",
+        "assurance/output/root_spectral_poisson_receipt.json",
+        "docs/SPECTRAL_POISSON_AUDIT.md"
+      ],
+      "nonclaims": [
+        "The root electrostatic solver does not yet provide a dynamic electromagnetic current-field update.",
+        "A passing electrostatic audit is not a plasma-wing force validation."
+      ]
+    },
+    {
+      "id": "SW-SP-0004",
+      "type": "open_problem",
+      "statement": "Extend the same explicit modal, energy, and null-space accounting to a multidimensional electromagnetic kinetic solver.",
+      "required_evidence": [
+        "charge-conserving local current deposition",
+        "Ampere-Maxwell update",
+        "magnetic-divergence preservation",
+        "particle plus field Poynting closure",
+        "field plus mechanical momentum closure",
+        "Nyquist and aliasing controls",
+        "grid, timestep, particle-count, shape-order, and domain refinement"
+      ]
+    }
+  ]
+}
