@@ -1,0 +1,84 @@
+name: repair-assurance-unused
+
+on:
+  push:
+    branches:
+      - agent/bootstrap-space-simulation-engine
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/bootstrap-space-simulation-engine
+          fetch-depth: 0
+
+      - name: Remove dead helpers exactly once
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          edits = {
+              Path("assurance/src/invariants.c"): [
+                  "static double safe_scale(double x) { return max2(fabs(x), DBL_MIN); }\n",
+                  "static double vector_relative_error(swa_vec3 observed, swa_vec3 expected) {\n"
+                  "    return swa_vnorm(swa_vsub(observed, expected)) /\n"
+                  "           max3(swa_vnorm(observed), swa_vnorm(expected), DBL_MIN);\n"
+                  "}\n",
+              ],
+              Path("assurance/src/experiment.c"): [
+                  "static double min2(double a, double b) { return a < b ? a : b; }\n",
+              ],
+          }
+
+          for path, snippets in edits.items():
+              text = path.read_text(encoding="utf-8")
+              for snippet in snippets:
+                  count = text.count(snippet)
+                  if count != 1:
+                      raise SystemExit(
+                          f"expected exactly one occurrence in {path}: {snippet!r}; found {count}"
+                      )
+                  text = text.replace(snippet, "", 1)
+              path.write_text(text, encoding="utf-8")
+          PY
+          git diff --check
+
+      - name: Build and test assurance with warnings as errors
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S assurance -B /tmp/build-assurance \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=gcc \
+            -DSPACEWIND_ASSURANCE_WERROR=ON
+          cmake --build /tmp/build-assurance --parallel 2
+          ctest --test-dir /tmp/build-assurance --output-on-failure
+
+      - name: Build and test robustness suite with warnings as errors
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S assurance/robustness -B /tmp/build-robustness \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=gcc
+          cmake --build /tmp/build-robustness --parallel 2
+          ctest --test-dir /tmp/build-robustness --output-on-failure
+
+      - name: Commit verified repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assurance/src/invariants.c assurance/src/experiment.c
+          git diff --cached --check
+          git commit -m 'fix: remove dead assurance helpers'
+          git push origin HEAD:agent/bootstrap-space-simulation-engine
