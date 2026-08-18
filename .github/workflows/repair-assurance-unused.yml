@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - agent/bootstrap-space-simulation-engine
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
