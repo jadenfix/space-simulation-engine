@@ -1,0 +1,174 @@
+name: install-fdtd-spectral-crosscheck
+
+on:
+  push:
+    branches:
+      - agent/bootstrap-space-simulation-engine
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/bootstrap-space-simulation-engine
+          fetch-depth: 0
+
+      - name: Integrate cross-method FDTD verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f assurance/tests/test_fdtd_spectral_integration.c
+          test -f assurance/include/spacewind/maxwell1d_reference.h
+          test -f assurance/src/maxwell1d_reference.c
+          python3 - <<'PY'
+          from pathlib import Path
+
+          cmake = Path('assurance/CMakeLists.txt')
+          text = cmake.read_text(encoding='utf-8')
+          marker = '''    add_pic_engine_integration_test(
+              spacewind_assurance_spectral_poisson_integration
+              tests/test_spectral_poisson_integration.c
+          )
+          '''
+          addition = '''    add_pic_engine_integration_test(
+              spacewind_assurance_fdtd_spectral_integration
+              tests/test_fdtd_spectral_integration.c
+          )
+          '''
+          if 'spacewind_assurance_fdtd_spectral_integration' not in text:
+              if marker not in text:
+                  raise SystemExit('CMake integration anchor missing')
+              text = text.replace(marker, marker + addition, 1)
+          cmake.write_text(text, encoding='utf-8')
+
+          makefile = Path('assurance/Makefile')
+          text = makefile.read_text(encoding='utf-8')
+          if 'FDTD_SPECTRAL_TEST_BIN' not in text:
+              anchor = (
+                  'SPECTRAL_INTEGRATION_TEST_BIN := '
+                  '$(BUILD)/test_spectral_poisson_integration\n'
+              )
+              if anchor not in text:
+                  raise SystemExit('Make integration variable anchor missing')
+              text = text.replace(
+                  anchor,
+                  anchor +
+                  'FDTD_SPECTRAL_TEST_BIN := '
+                  '$(BUILD)/test_fdtd_spectral_integration\n',
+                  1,
+              )
+              old = (
+                  'INTEGRATION_TEST_BINS := $(PIC_TRANSPORT_TEST_BIN) '
+                  '$(SPECTRAL_INTEGRATION_TEST_BIN)'
+              )
+              if old not in text:
+                  raise SystemExit('Make integration list anchor missing')
+              text = text.replace(
+                  old,
+                  old + ' $(FDTD_SPECTRAL_TEST_BIN)',
+                  1,
+              )
+              rule = '''
+          $(FDTD_SPECTRAL_TEST_BIN): tests/test_fdtd_spectral_integration.c $(LIBOBJ) ../src/plasma.c ../src/math3.c | $(BUILD)
+          	$(CC) $(CPPFLAGS) -I../include $(CFLAGS) $(LDFLAGS) \\
+          		tests/test_fdtd_spectral_integration.c ../src/plasma.c ../src/math3.c \\
+          		$(LIBOBJ) $(LDLIBS) -o $@
+          '''
+              anchor = '\ntest: $(TEST_BINS) | $(OUTPUT)\n'
+              if anchor not in text:
+                  raise SystemExit('Make test rule anchor missing')
+              text = text.replace(anchor, rule + anchor, 1)
+          makefile.write_text(text, encoding='utf-8')
+
+          root = Path('ASSURANCE.md')
+          text = root.read_text(encoding='utf-8')
+          link = (
+              '- [`docs/FDTD_SPECTRAL_CROSSCHECK.md`]'
+              '(docs/FDTD_SPECTRAL_CROSSCHECK.md)\n'
+          )
+          if link not in text:
+              anchor = (
+                  '- [`docs/MAXWELL1D_SPECTRAL_REFERENCE.md`]'
+                  '(docs/MAXWELL1D_SPECTRAL_REFERENCE.md)\n'
+              )
+              if anchor not in text:
+                  raise SystemExit('ASSURANCE Maxwell link anchor missing')
+              text = text.replace(anchor, anchor + link, 1)
+          root.write_text(text, encoding='utf-8')
+
+          readme = Path('assurance/README.md')
+          text = readme.read_text(encoding='utf-8')
+          sentence = (
+              'The root Yee update is additionally checked against this oracle '
+              'at three grid levels; see '
+              '[`docs/FDTD_SPECTRAL_CROSSCHECK.md`]'
+              '(../docs/FDTD_SPECTRAL_CROSSCHECK.md).\n'
+          )
+          if sentence not in text:
+              anchor = (
+                  '[`docs/MAXWELL1D_SPECTRAL_REFERENCE.md`]'
+                  '(../docs/MAXWELL1D_SPECTRAL_REFERENCE.md).\n'
+              )
+              if anchor not in text:
+                  raise SystemExit('assurance README Maxwell anchor missing')
+              text = text.replace(anchor, anchor + sentence, 1)
+          readme.write_text(text, encoding='utf-8')
+          PY
+          rm -f .github/workflows/install-fdtd-spectral-crosscheck.yml
+          git diff --check
+
+      - name: Strict GCC full assurance matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S assurance -B /tmp/build-gcc \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=gcc \
+            -DSPACEWIND_ASSURANCE_WERROR=ON
+          cmake --build /tmp/build-gcc --parallel 2
+          ctest --test-dir /tmp/build-gcc --output-on-failure
+
+      - name: Strict Clang and sanitizers
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S assurance -B /tmp/build-clang \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=clang \
+            -DSPACEWIND_ASSURANCE_WERROR=ON
+          cmake --build /tmp/build-clang --parallel 2
+          ctest --test-dir /tmp/build-clang --output-on-failure
+          cmake -S assurance -B /tmp/build-sanitized \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang \
+            -DSPACEWIND_ASSURANCE_WERROR=ON \
+            -DSPACEWIND_ASSURANCE_SANITIZERS=ON
+          cmake --build /tmp/build-sanitized --parallel 2
+          ASAN_OPTIONS=detect_leaks=1:strict_string_checks=1 \
+          UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
+            ctest --test-dir /tmp/build-sanitized --output-on-failure \
+            -R fdtd_spectral
+
+      - name: Standalone Make and root regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          make -C assurance clean test
+          make clean
+          make CFLAGS='-std=c11 -O2 -g -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wstrict-prototypes -Werror' all test
+
+      - name: Commit validated integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'test: cross-check Yee FDTD against spectral Maxwell oracle'
+          git push origin HEAD:agent/bootstrap-space-simulation-engine
