@@ -1,0 +1,91 @@
+name: install-em-pic1d-reference
+
+on:
+  push:
+    branches:
+      - agent/bootstrap-space-simulation-engine
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/bootstrap-space-simulation-engine
+          fetch-depth: 0
+
+      - name: Materialize source bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/em-pic1d.tar.gz.b64 <<'B64'
+H4sIAAAAAAAAA+29e1vjRtIonn/Xn6JDslkMlrFhmEmGkD0M48mSZRgOl+Tdk81rhC2DMrblSDZgJ/OBfp/j98VOVfW91ZIFc9k850XPkwyWuqurq6vr1pdqbnz20Z9Wq7X5bHsb/8UH/20/227L3/Suvb35pN1qbT979uyzVrvd2n7yGdv++Kh99tksm4YpY5+lSTItK5eEcTe7DtOo/ymw+mRPc6M3DONR9jHZ4P7jv7m1+Tj+n+RR4x+Ngknca/cD/rv5a5aMP1AbOMBPnzwpGv+nbfjbHv+nrafbn7HWB2q/9PkfPv6/1xhbyXrX0ShceQ5/TcJedBuP+03BBjftlQYWCdNpPAh7U6tQoJgmzLJZGo57ES99E6VZnIyxcKvZbrb4Ww4SXv4Mvxj7nf4P7+M+Fjz9Kei8br8MkDuoPH2bzicRfo1+m4VTANmNR5NhNIrGU/qpC8IwTuk9lj67jphCib2N0nE0ZKpmxkI2idI46cc9loyjoB/Da0Q4HDbY9DqNouAmGia9eDoPesloAmXGUxYNo940TUbh1TiaQs0J0qQ3jIJBHA37LI0GURphe7fx9JoBsaKgB/XgZV/UhUpUNmuwXjQc6s9TQDRDokVMgZclQzYbx4MkHbFhMr6Kp7N+DHg65RrQ/BAochNn+O5FksaZQpCNEqQVgBr3AVw2H40iQuZf0NFsOocSr8O7W8CIzSZ9IGNTkzW6ifvYKTVq9FbRdiMe94azfrSheAIESZd4onmtoFg1srSny/TMMv2kl210XnePD/bbL7snnVedk87Rfqc56q+IQr8ovMbJ2GEneo0D74yoHuqrKMGOzxnQZpxMgRSj2XAaW2WHYTYKA+jIFVCtHw2bJoIIPbqbDGPgDNZLZvAXlBPQCB0cywQ+jbMovYHC4yi9mrMkBWDIebMRfk6T2bifDAYMRpWF6WUMww9YEQdnTdVX+vddY8lc2czPlUE8jqdRFyZ1723JBLHYqTdLU2Ty3jDJogwmQcQ4mOAmGc5GEfZpGo9nMCWYnIvET8S6kySd8kogIUfJGIgtAQ5gxgAH36bhZALUcXhyh2EjMSCAsAaEyvfhLMvYMLxt2BD3RjCSEUN+nAIaDd08nzmTcHodyGapHY4k1Amhl1NoHfgzmkRjhDCEfoS9a6B6NLkHvxdzry4DozjN6P/dZUWT2XQymyqI3ZuwN5uNumnUi+LJlJRwZd4/BrDIj5fIXtDZHlDuKhKERQk1jPpXQCnWTyLOsjfhMMb5jvLQYHxgS5BiMAD35cWtB/HiC4EvkQ34DEaTeDNIZ2PGCRLchjCbJmkyCa9CLsumMNlw7FDuxmMChrJyHM2AJYa2OBzFd1E/yOKrsehng12lcT9AGU1sw3ppQsRrAF3GiyhNcozcyMn//VeH0Myv8JIQgoqycSVxxBAYpWAuIZMHah4Y33CkQOTEl1GKg0LzIIBhAJqk6WyChe7BqUu5sAmz/3p2uXGbpG8Hw+Q221CVm/PR8F4yF5uBIUSqgsqSnYM/lRbDuSqGDDmQi0yQkzBLZ9BZ0HE4i1ESJWP464o0qeyjJYX3FIe7kj6NMhDoSiBfhyMgJUrfwTC+up4a4O7H10/yfJ2AGOkCQ16CSVHA18fAKwl0DYWYNg7iMWgAj+ZxuettzP/NkiFOCK66RZeCHkzcS2SSvmfiOnprJQV5HYOV0fVzzPQ2CZBG3O4xUQILCMeDeDgQOg2bkTIWZGmSxZYZhlo8lsMXTGBARB3VL25hmBWQlAENKWrB42SOiuaKeizMEjBSAFIGwzi7izKzrrLBJsNZJgwxoXSxvtK6qNZmKbJZH4ipRYYJS1JcjMQ4IxBk2PTScDDllADUzEoAFaUISIdRPAVjDjg97ZEggWFPR2hQEpRpOutNZynxN7cbTCg4b7RI0xMIqD5D0QOOxyQKkrSPDfSBSWIhLiTZcHj6XN/5O2doPmab0Cy8goF3y6cR2fCXJKHQ4iFmk1OKMxrN6ST9bQY8F4VIX7KunclVw7/e1f7Tjs7j432aG3unp+cne9zO/jhtLPH/N5+2n7jxn2ebW4/+/6d4vmDH1/MsRkGvHWYyGcNhFg9w3oOMqNVOpX/3t8y0ovNe9hDEfybk7M8X2hy5+GVV/6g3awcoT8EoBGNAqhwwE2J0iMEsRQ9Z2wH0A0Ty0HBGULFwU7DWj7NeGk0jbmwEgL02r4TN29BqbAQGH8k1VUa5MI2astyyCSoBoMpxEmeZ8HW0RSackDgiB13aI+2XWz/WqoYJHJcd4TtVa/H4JkzjEGRqg12DYZhkE1Aq6PODIrRw4AJ5Bi5WyrHBHqMr1w96c2i8JpVijzQKKShbmHOBT5Q3x1cKf2mg1gZhPAw4aJb1YkRhgJYuGoZooXO/rlmroVnYj6ZQHBUHjl/YI9sM3PwZKgryx57XaoHFJyedvZevURZZDKPe1qk4RQqU4OruHb3svto7PD14dbC/d3bw5ohXr1DKAPfqoHP4kgod752cHewfdrqHnZffd04MYGVlDFD7/9g7+b7T3X9zdNo5+fHg6Pvuy87xm9MDB7UlxQyAxwf73TPoxenxm5Oz7sHRWef7E7ejZWUMUKfHnX0odtg9fnNwevrmqLt3/vLgzIBTWMAA4g3SSADej2ZnDvdOX+91ofevX3ROuscnb87e7L85NLtSWMIAc3T+unMCI3nY/RH+9Yx8YYE6Z05pxqbcjE14YChkWQzGuQ5wwLRQchBsy5sYTENk3yYDEYaudE1Ff8DmCzGsxN2N4LcZmOkw620jHb3Y2RDlHcvmYO6NWHQHIiBr/kdMpKZ2+j7aEtD913+2Wk9aj+s/n+Ixxx9jWx+jjQeM/9PNZ4/j/yked/x1qOjDtVFq/7e3nrSeuOt/20+2H9f/PsnzhVjAMVb1zBWcWk0V+HYwTMJp8/o749UwHsWguax3o3B6bb/Jpv1hfOm+S0EZ4rsaBs3AguwnM7TKR+Hd5qr4O2zIt5d19jso6uksBaXMvmOX7O/w73N2ucPe5QFseQCov3oGKGqM/gclL+tgE9cNgFm8iLq00DOedpO0m4yjVfOdAYh+s91d1joHzNrngBq9QmgSXIyrITwcfhP1VrPbEP/dwij8LKqL8KOAF2e85Cp9bN7V2VdfuS/nvpeL+k7tnUtTXHzpStdG0kbG7rojRZphNL6aXndHEhmjOq7d7LLBKOmvmhVVjR2qEA/Yqiz9LWs1W3UVVWUKzPquqrajQkR23e92c7iYEHYRtFlXUE18Nykgxkt2vou+zd0qLi/QGgP5OncN5gwrAdWFoNez4SzbcV6DLJj1sDmJvskFf/whmOI7Jpimfnj4Bmz813v/ZfZJoN46N/sjGoSOalTrnKFEf6ll+E74s7/aKCIusggMg90cfw2DYFWx6CgRVh30MnGYpuF8lWL4klPWiAkzPz3Fu1jjyEsjwY7ODw99VDGRw9XS1RgH/3yHxdAxMcPW12OzKgL+3J4V2c/xL3WzTL4J3YxFibbbd4rwdyke26XlM0EAnM1SbrI1KuVMaXrHPud9xZlLL4LvcCdAhhz/5BzemihaBb7dzfORU151WlTkgeKunkle8E4p4FeYXEsg03JZN+MLV8AIUdgdbRbA95at1Ep/2s3qBqXwd6WKl3ddsWeie1aAlVqiMkbEUyy662J4v/sjEKa84LxqwUXFgpfzLo5892xJsYVTzM+xfB5UZdn8VP08z/iixh9/KKw+tyRDnoQNi6UrVJ0/vOriwVUV4e9dceGveG/B5vBo1y/o8qPYVSHNNfXXLvvKZXmQhjsOFCG/s0kU9TehDhkn/WS6qqKX38kdUd3RJGtYkrTk8Vev7xRIa11cGRlq6wgKMGMEzFFAc6qgpVwVT1s8NNzdr1R4BP5S9+1VxbIg/Lq3EUaD8hXyQLlwW1JSgywsLobxu135nek3pz/tdffZGv/3w+hE7gUUypYu/87W+L+OWhQf/TJO0ZSXgqFSu5C6InoOcioZRuTAuqI+V/sK4/cPqSgj8l29uP0QMDwI/yAExEL2w5C/i0dQFaQIVJhWLq/FD0ox9B+6uDrt1q80NIIXC6oWjUt5rWqDUg6jcESWNF08HMtwtsbCa80UlQULsL20cMGg8YZo4pJNYE5PHP1VrvbzFkHDtAcIpvXGVlEN02t07Errm9cmtGuDrVeTogKVBDefhatA3hU3i9FsVr88vpaltRWv50xjAPG5+9YjXzWEAhPYLOsvUwqVm7wcGWXtWmVlR08P/k+H+rdBY5EMhF9vFbaHx1vLaz8sNVlG0SiLpnxQGqzVkNCEGSkUvOXA7HLUrS8OfrsOwlZZd3B2XQ6z2/SSftfPeXY7SPddYkAvrtSTcAg2xqoVGbJRrzskMeo71DFdDA2ZZpozsk69+QPrLR5WT/sj96q1uFctNdMteutJ76OZ+qo41kehPIxFFRhGr3MQjL7lIxjWvOpH2TRNhKNgWL++qWVZWTdJ3C8AVey95cRlfjZb7kcaRTmiCyTNbwbRfV/npV8XZV8VkX3fFva35ZLHp+OgihJu1XQdDwyaKsnnkjQULB7KzflIUuEJF8N6Kax+552275X+W+KjWa0yj6Pl1Z8l00x7ZxRdBIvGL6+9KqzIc7O8tUIfzVCwhldmvPb5X+ZX2+MCPVrsW32+6vemfB6UntfLPSnfrM774EjaX5o+aqEe9Lz2ayMJyKQoADB/lleUdEYBLf4sryAJuisZeFlxg8a7FoPLYLbfrRTbi7scq1VjJhTOXTsYXTxhZYn0Onunud0db9ttpMg2HXe+UXQsvs2Q4oxMN/LN/kvbvaBgLTJcNJtWeaSHt5MHEYzra0hXb3nYVi6EjgFCwmbVSm0eIAIk/HiXgBXaU6HobXodjRr0GnH8Hjm8g279zS8i++wo57gCNvRY+fi7XskiOg08G2aNh1sqNha+6lg02MZeauJpS2nQxh6vEgjGrVlvbEFpN8SMpNtN6XvO3RqFDm+o8jqh9ROdrUXRRV1hft6s8IOZoBZXy8UcbflEwUhye2TWCiGqg15g/JFYASi8c2kuhFp4+JnVRbRRMaQWoXtSZJEnxpB3NHonOBpcTAUyk7YJ6w+QWXHiYyjg1B0OAsqpBGY2J4rQDNEcLC5b7Ua9n8u94TEouauIjpjZ9zL2l9nIN9XE/L+ieDKZNlPs6z70xsLHjwXy8HQvA6L8b+jSo9a2SsSIUcHBUUvo7t7S9SIsPGaV6Zhu0x6cocoqPOSgoSzQrBAYO5ojcmuVR1gcFI2sOmb1aXAgYJ5S7Gq6BOEsXO3YneBMIZJ21z+vsryyvwGhcTQZQhgXMWlsG6wpz9LitSms2GQJDHv9MXwyxgVSSolN8BATn5pRy6mJHEKhTqw6vjGouzF2TU30oWyNtoUxfilDmHwtRFp9dlPnrIpRVJQNlpcq7Yb+/+hVpVrkzvl5YTKrZBhvAn3JO1nMuZG5urLmqm+vyZjYTtmzemoIy8p0uJuaWteSmNaW9RlcQ23ZQsXfO5NEo8CLFWWUUfTxkTVv6l/iTQsbhKTw6JNkdRUBZcKZ/dKxRFwsVUjaMTNe0tY07IIr1wuz0TklT1jdUSa7lhygXW335ZWJrtdmzTqxI76VKQdkS+lg1SsrlNyX5jDFJ3IJAn9d+qheYgzAk9zYfdfuWheyzJWniyfLGFKb3UGdJrOmBK8+ywZ/jX1guNoDLy1631myYeMVx8ERIR1ZtYJ+LF5q/Mpm7wb5yRt3iCJJbZvk6KHy+7a+YV6qscW9tgm5eYy9fHHY7x6cHYDrALxeTDzheD3cr8zG8n1u/mBvpHFZA/a75gQNy2cADk1c0uML6CCrOIqpwX6Hf+G2DIilAx0osWoCSrbpQqDT8qFj6y3VwZKjtOh6QovZJKRaUMwgWRR1WOiz372ER4X/BLX2EsH/x3sd5Dtf59OzSTTzWZksZB6VjfJNkiLqA3wDwgPCNaNP7aV78aVH4SYSZvZ8Wxqf8BlmlDql3a2rl+eyjRn+KvFZzA27BVj8PNBq/EjfUrKJ9QqpV7GVwj9QBbbUubAQNJ+9/5NrwOiF5cMolMYAX+yV5YgzwRCLX8y5xAra8Z9Kzx9WJiu69S12qu4y6TgM+cmg4eerm2lhOXaqiqGsAr0hdqmFQ1yWRpG5pz+RsU1dniRWPLR21ERLiZz3+v4A6WeUOszXEdUfzWDWFq7RmV9H6X0ibhzQzv08ziwc3s1jaDJWXfpmWXx6ievbQahyFCP1Z84SBozXsLo5WTYWjVcVoZvHgZhZLmzFJIVSe5DF3CcI8od29xEvVVm1VoJZZhGuoF/5y/Kv9PfVJj4NvsXCadGmBZd9dI8StCa5KUojQHVqIhl819XDl0Fq58szfkiXGXD+XPL6K9pLEVTgahfKz58soHstDCtZ76qj1Hu8nTNIdmzIz97cJUL2dOr/d77PuJI1lwMp8O8yBmpmY0SmH3NCYjp13VdQklm/bMRY2+Sq3vqo5q3x11eQxJ8wqtyLpys6WpCUbTXuby/xsa+RFoHODZb+lUzHTBbANhMUrziRTUsTNz5Y2XGnqEm+Qw7ONAiHffXir9/wILpGtoTMxa5gtW7NaQJc+vMG3CED2Z11PJwG+Idupm32c2n00hITsxYbZhNxvY9eaNtgmXyN0moYP07rEVLC11U2JGr2hJUX9bmpUHDrk8dYj8PBO1+N3/FkVEdQ9iaugeIlLXxuyMYu4HkFpE07V5txoNOf1knCyeWDmTp1I5DxlGz6k6ni+abNoSdy8urEr7jF4nwVyNX1KSwnkfGUwHCuB6AX1fBkOIr/k/qvwL/fcfaBrU5yoU+5449cP7XHpIGca3naLAp16lVzeFUO2+vKAaJ7EpvB3SetbwHZJ666ba5L6apuENWu6ZK26UG3Ce/8IkgVNx47s1784kRYRNVq1O0/lcsTCQA/b8AVPtKz/AIdw3BVrX0hUr10vsZt8lSuscffjbDIEquHOdHMHkWCtPB2LnjzLWgeG3EUkPSEaep3PRMaKtOXmM64KaRA8YKbaKjjJuGTLi0lh8yihl03vF1CUMqLh8uh9wol5GiwZGNnqRwonutOtPJDoixJa4rvqipxDhLqr7IDgXX29bxfvab2XrhNUv3O1m3pv6TM5hXkDXbGmm1dIssCiqMDar/MiXfbrwv0iFMZaFl3R3YndZFaw7dPY9+6fFB4/TmjF+0cezelLIBSxQMYaBLXcrzRCfPpR6ry/c34j+2TGzgQdDqMvliYVdFHnA+TOpryiLdrfKo+JbJ57dnff89SIc1yk0jkRHAN5ouNuSVmDso4zpuhf5M552HZJ0UVRUZN/TYKa3OvdMW/wcFVzAkeOVudsjgPrV+8h8y6y0S0fVNMkmr6Qguz3eqGmLgqtm8LCvdwiB2RpMF3X8G+y8kZ7fbu7rOjs++zisQDda0uPHT43YruesK6vCyZXqT06u155a0Q9ZZSvAI7cOFMIRwIw6i9K8VhUxmNRisdiGR5r9nQB2ueWfttypvCwgBKbZDLNxj1n0gDrea5jMar5t8SZgJdsg/PNYKptM7Ir4A3FgHumbKQD1SSHtOZcDqP6gEeEW4UTWsaq1a45FyoJX9sTKH5sHN/LtprnbKsCVrV7sGNDWRRCWVSD8s5kJW4WVJd8t9cxkJiLW2Mw6+w7E8unT5bI6XL57KyKudtQ5T1O4sJrc1SkeS1shfwXApik8RWYS/mv01b+VTv3ahgNpl1c175KteVjfE+R3mUFCEDBzlxe2f0o5X00yL9M7aJkAVm20ne2jbMOBlDV0/4SoDlvv3M3TuFjDJRPldGMo4nnbJbVg4jV5Ew1oa0Te4hpa1dWw0wbMzSG35pgA+LxvxdOd7Pi81xFgyAsGmZR1W73onho9hqgtfFCluK+e7p+nz5/91H67OUqik3hYXXLLlVfK1+vpAgo52NFMkxbWJCvp1v16zmTa9qWRdcNyi2t5sxwVFUUabK6tboK0AOxigB/4v/qrv++Om3pMi36X92YAq6oUKsSvvZEGwBPQnIwVhrPxX+jUI2Z4gY5ysWnuCa2UbDFYInlmUq9TCDKbU3bVoTyZXrTK1ctCNR0GQi/+LUtRReLRRUsFqVYLKpgQWy861Nu5nwOvCXW1y2dYMXhHPPTVh7rps0lLzRsnZfsE7OCHqURILvaorCa5x5DFYsV13b8UBQH8hxKsu+toG6qQIsO74tr0pdF9iteRVfxbiWK8L7X9Uo5CEUuKy1neZZabW0jl11X7SOuxUcEONlstAvj18bhLfGNnye1BZ/VNHpiHPWA240mK8s9HIQDPzXg2ZKoeEfd3XJUuCnxwewzuStdPJp4OUt/Xjwy3jLGs3smjheVsFp5h/x8yJEtZPYJ3hcqDvwU0qF5VzxbJvMqAOYlABZVACx8s0Ts9prc4URpAEeKfxf4r0/m0vbdpQL3z7WN1x9Bl4eoq64dvddi8kMVSWlAwepOhFNa7mOMcZeb8WO9hO/lpkReZ16tzsKso34UzMvLTU1lcx+hXrez3pY1LLcNUsPGj9I6C7OO+nEv7cUNcsEya1wg4dEE7P4m2EeXm+K8wuvzB6kjPq0q6KLHmfUf17EV5qS8/yCNbuKEX9yM2xmsEExQIb5esutZz+6GMWsra2xmTuL8ioC7JdWzMdgYOf/mYD1vVs2ZqqatpM4vdX+dhVln4dZRVYqRF8dx7Q1dNv56c5qkcEP1ud5QJ5B8jXnMANFg807JinKtL8vPq5Rf6PILt/wDdTpdJ8WPrvIU0B9Y7PjvU5F3E4aXmf+DvEXxQ+/tkrbnMLkMh+owOgaoXx8c+aa+iaq5tSmHacm+p/vIi3F0N5WyovLim3HdpdpwpNWTHT2SQgMbwv1RWojk418OmShyb74T579zzdfLZRBfNZDH0vEidpOF/18hntVIGmVxf0YLdfn2jBP8pk3isB6dTrVmjiCkAG1T0cefFsANa3RzIsG4u/XhcuGhe0DtEsU7QQvFSDr6E8oVZXFkv80wa8xSs6NI9nzqGYJZaLv9KI1vBCfZk6L6rsv8TsuS2eg2Y+1JkxPQ3XP3UBHmdLGKANOYmtGIpZN2OWCX3OvM35RjHQiuKmqgHGxhWKQSNg8UOVQJpqrctS96ULKnsegux2k0WXLnxtJLyBu5+l2RPHwtvwPPvP1YCgx1YfnfbSP/udqiZjsG7kW3BUCcchpa7nKOoj38TGaB8BaS5ybyRYw5XPi9uPavd/7Xc//rhfd1dFeKQTQv/7wo/XxZXvtyae3rcDgoqlr4LborIVo0L/u4KPl4WVbz0ldzSXjb2/lldQpRsC7b8Z3sswrkD/K5t3L4QLhl8lDMDcZiyc36Lioa4klG1niwM/9BhWvyn+Sa3m2SvjW1t3FyhKPzKwCejcrPmIiSi6UlxXmgqF8FrFF4OWSpzoGBlxXl1kBxQXurLki1hCi0w/ciLb01iH1u5ZeQSSTgg7HP9GPekP6wWu91rzr0zLrbGH5L7VvVajVMPKiN6Rkoi0B3PKOkz/oQsGGlWfaUVWsSZhndfO6D9e1uYc4Ce+nXeQpgteXcIdbwoGESkT7zJWXATu1L8YDOX62j91d+0Y+gYsT2Dg/f7Hdfvjl/cdhZHYcjyjxOKcz6Cfud/ZvK43vmvxqK/6p7LoMSdbFLBLiud0hfJdOEAXOE49kEy72T++1aPOZlIeWq+4bDi6KX/jriZOPyGoYx0GDmTo5cKQGysMyvd2Uf52UfFyUftalQVmhepdCiQqHLKpAuK0JCY6EczJIS0qgo7/rSIoulRS6XQ7nMQfliNobZZJWqWTJTmxr3SqPg1pcCMWeOPAwqP+Jr3sKWw9c4t+m0mT/sYE1qKWaEhO9N5hYD++5YKr31V8KY52HM7wtjkYexuCeMyzweRg61ShDyWBjJ1KpAcEer4XpUti/uKPC1pVzmNiOY/j0bsZguF+ipeAufRJXfxud24APdxqfpauqGQuX+lc8FyN/Sp6lcZerkN788JATmxL6EQObE[...TRUNCATED...]
+B64
+          base64 -d /tmp/em-pic1d.tar.gz.b64 > /tmp/em-pic1d.tar.gz
+          tar -xzf /tmp/em-pic1d.tar.gz -C .
+
+      - name: Verify exact materialized files
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/em-pic1d.sha256 <<'SUMS'
+29c7d15e00388329ee63dd5e4f29f17cb416ac3024b7bf477fe3fc5e2650fffd  ./ASSURANCE.md
+9cfbf0dce48bf5ccc7653473dd3a4be8db33593a82f2939994c53dc70c86fad8  ./assurance/CMakeLists.txt
+c08e376e4e17fb416c7b5f362a4f8eef3a61c6257f4b2d47a1cf66cad6632c05  ./assurance/Makefile
+b917fb8db442427b3b8b72c5db0a0f8bcacbeeca3c18c82af081ca893bbefa16  ./assurance/README.md
+5a54fb6eee500230e96ee2b302fd6027b4f56979a06a1bfdaf192ddc1bcdc606  ./assurance/include/spacewind/em_pic1d.h
+7475ac974b2c623445436dea2e71c20202e3fe0e0c0328b7994cb0f5f5c9e7ce  ./assurance/src/em_pic1d.c
+93ccb422eb5ed5a30ec0b3ec5cbff1f0808d850ed163ce1e3f4d9cbd51382331  ./assurance/tests/test_em_pic1d.c
+16eacb9a39f2490a95466752350f5c53161e09d664021608f79f46449f2b64eb  ./claims/em-pic1d-claims.json
+ca96ce5029af0c3041e30bc8e830289e8a11e4018fa2a1e467bb2c9fc3a6e321  ./docs/EM_PIC1D_REFERENCE.md
+SUMS
+          sha256sum -c /tmp/em-pic1d.sha256
+          python3 -m json.tool claims/em-pic1d-claims.json >/dev/null
+          git diff --check
+
+      - name: Strict Make validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          make -C assurance clean test
+
+      - name: Independent CMake and CTest validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S assurance -B /tmp/build-assurance-em-pic \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=gcc \
+            -DSPACEWIND_ASSURANCE_WERROR=ON
+          cmake --build /tmp/build-assurance-em-pic --parallel 2
+          ctest --test-dir /tmp/build-assurance-em-pic --output-on-failure
+
+      - name: Sanitizer validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S assurance -B /tmp/build-assurance-em-pic-sanitized \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang \
+            -DSPACEWIND_ASSURANCE_SANITIZERS=ON \
+            -DSPACEWIND_ASSURANCE_WERROR=ON
+          cmake --build /tmp/build-assurance-em-pic-sanitized --parallel 2
+          ASAN_OPTIONS=detect_leaks=1:strict_string_checks=1 \
+          UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
+            ctest --test-dir /tmp/build-assurance-em-pic-sanitized --output-on-failure
+
+      - name: Commit verified implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/install-em-pic1d-reference.yml
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ASSURANCE.md assurance docs/EM_PIC1D_REFERENCE.md claims/em-pic1d-claims.json .github/workflows/install-em-pic1d-reference.yml
+          git commit -m 'feat: add verified 1D3V electromagnetic PIC reference'
+          git push origin HEAD:agent/bootstrap-space-simulation-engine
