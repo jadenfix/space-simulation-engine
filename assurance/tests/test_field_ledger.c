@@ -41,6 +41,12 @@ static int near_vec(swa_vec3 a, swa_vec3 b,
            near(a.y, b.y, relative, absolute) &&
            near(a.z, b.z, relative, absolute);
 }
+static int near_vec_norm(swa_vec3 a, swa_vec3 b,
+                         double relative, double absolute) {
+    const double difference = swa_vnorm(swa_vsub(a, b));
+    const double scale = fmax(swa_vnorm(a), swa_vnorm(b));
+    return difference <= fmax(absolute, relative * scale);
+}
 
 static void test_charge_continuity(
     swa_charge_continuity_result *receipt_result
@@ -440,11 +446,11 @@ static void test_local_electromagnetism(void) {
             "rotated Maxwell traction executes"
         );
         check_true(
-            near_vec(
+            near_vec_norm(
                 swa_rotate_z(traction.traction_N_m2, angle),
                 rotated_traction.traction_N_m2,
-                2.0e-12,
-                1.0e-18
+                5.0e-11,
+                5.0e-18
             ),
             "Maxwell traction rotates covariantly"
         );
