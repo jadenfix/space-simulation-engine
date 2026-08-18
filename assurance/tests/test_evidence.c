@@ -1,5 +1,6 @@
 #include "spacewind/evidence.h"
 
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +31,7 @@ static swa_claim_gate_input empty_gate(void) {
 static void fill_software(swa_claim_gate_input *i) {
     i->dimensional_contract_passes = 1;
     i->conservation_ledgers_pass = 1;
+    i->field_particle_ledgers_pass = 1;
     i->deterministic_replay_passes = 1;
     i->memory_and_undefined_behavior_checks_pass = 1;
 }
@@ -56,12 +58,16 @@ static void fill_chamber(swa_claim_gate_input *i,
     replication->passing_replicates = 2U;
     replication->same_sign = 1;
     replication->interval_overlap = 1;
+    replication->pooled_effect_N = 1.0;
+    replication->relative_heterogeneity = 0.1;
     replication->passes = 1;
     i->reversal_experiment = reversal;
     i->independent_replication = replication;
 }
 
 static void fill_cycle(swa_claim_gate_input *i, swa_cycle_result *cycle) {
+    cycle->net_gain_J = 15.0;
+    cycle->net_gain_interval_J = swa_interval_make(10.0, 20.0);
     cycle->numerical_cycle_passes = 1;
     cycle->robust_positive_gain = 1;
     cycle->physical_promotion_passes = 1;
@@ -152,12 +158,57 @@ static void test_fail_closed_blockers(void) {
                "failed replication blocks chamber claim");
     replication.passes = 1;
 
+    replication.passing_replicates = 1U;
+    check_true(swa_evaluate_claim_gate(&i, &r) &&
+               (r.blockers & SWA_BLOCK_INDEPENDENT_REPLICATION) != 0U,
+               "one replicate is not independent replication");
+    replication.passing_replicates = 2U;
+
+    cycle.physical_promotion_passes = 0;
+    check_true(swa_evaluate_claim_gate(&i, &r) &&
+               (r.blockers & SWA_BLOCK_CLOSED_CYCLE) != 0U,
+               "numerical cycle without physical promotion is blocked");
+    cycle.physical_promotion_passes = 1;
+
+    cycle.net_gain_J = 30.0;
+    check_true(swa_evaluate_claim_gate(&i, &r) &&
+               (r.blockers & SWA_BLOCK_CLOSED_CYCLE) != 0U,
+               "cycle nominal gain outside its interval is rejected");
+    cycle.net_gain_J = 15.0;
+
+    i.field_particle_ledgers_pass = 0;
+    check_true(swa_evaluate_claim_gate(&i, &r) &&
+               (r.blockers & SWA_BLOCK_FIELD_PARTICLE_LEDGER) != 0U,
+               "missing field-particle ledger blocks software promotion");
+    check_true(r.highest_tier == SWA_CLAIM_NONE,
+               "missing field-particle ledger yields no promotable claim");
+    i.field_particle_ledgers_pass = 1;
+
+    reversal.reversed_effect_mean_N = NAN;
+    check_true(swa_evaluate_claim_gate(&i, &r) &&
+               (r.blockers & SWA_BLOCK_REVERSAL_EXPERIMENT) != 0U,
+               "nonfinite reversal evidence fails closed");
+    reversal.reversed_effect_mean_N = 1.0;
+
     i.dimensional_contract_passes = 0;
     check_true(swa_evaluate_claim_gate(&i, &r) &&
                (r.blockers & SWA_BLOCK_DIMENSIONS) != 0U,
                "dimension failure blocks even software tier");
     check_true(r.highest_tier == SWA_CLAIM_NONE,
                "dimension failure yields no promotable claim");
+}
+
+static void test_invalid_inputs(void) {
+    swa_claim_gate_input i = empty_gate();
+    swa_claim_gate_result r;
+    i.mission_net_gain_interval_J.lo = 2.0;
+    i.mission_net_gain_interval_J.hi = 1.0;
+    check_true(!swa_evaluate_claim_gate(&i, &r),
+               "inverted mission interval rejected as invalid input");
+    i = empty_gate();
+    i.available_to_required_power_ratio = NAN;
+    check_true(!swa_evaluate_claim_gate(&i, &r),
+               "nonfinite power ratio rejected as invalid input");
 }
 
 static void test_current_project_receipt(void) {
@@ -191,6 +242,7 @@ int main(void) {
     FILE *fp;
     test_tier_progression();
     test_fail_closed_blockers();
+    test_invalid_inputs();
     test_current_project_receipt();
     fp = fopen("output/evidence_assurance_receipt.json", "w");
     if (fp != NULL) {

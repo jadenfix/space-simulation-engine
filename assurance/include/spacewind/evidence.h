@@ -34,12 +34,14 @@ enum {
     SWA_BLOCK_CLOSED_CYCLE = UINT64_C(1) << 13,
     SWA_BLOCK_ROBUST_UNCERTAINTY = UINT64_C(1) << 14,
     SWA_BLOCK_DEPLOYMENT = UINT64_C(1) << 15,
-    SWA_BLOCK_FLIGHT_EVIDENCE = UINT64_C(1) << 16
+    SWA_BLOCK_FLIGHT_EVIDENCE = UINT64_C(1) << 16,
+    SWA_BLOCK_FIELD_PARTICLE_LEDGER = UINT64_C(1) << 17
 };
 
 typedef struct {
     int dimensional_contract_passes;
     int conservation_ledgers_pass;
+    int field_particle_ledgers_pass;
     int deterministic_replay_passes;
     int memory_and_undefined_behavior_checks_pass;
     int convergence_study_passes;
