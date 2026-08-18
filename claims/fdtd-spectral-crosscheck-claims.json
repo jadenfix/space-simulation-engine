@@ -1,0 +1,31 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-fdtd-spectral-crosscheck",
+  "version": "0.1.0",
+  "claims": [
+    {
+      "id": "SW-FSC-0001",
+      "type": "independent_implementation_check",
+      "statement": "The root periodic Yee FDTD electric field is compared against an independently implemented direct-DFT characteristic Maxwell propagator at matched physical times.",
+      "evidence": [
+        "assurance/tests/test_fdtd_spectral_integration.c",
+        "docs/FDTD_SPECTRAL_CROSSCHECK.md"
+      ],
+      "nonclaims": [
+        "The comparison covers one transverse polarization in a periodic vacuum domain.",
+        "It does not validate particle current deposition or plasma response."
+      ]
+    },
+    {
+      "id": "SW-FSC-0002",
+      "type": "finite_check",
+      "statement": "Three bounded grid levels require monotone error reduction, approximately second-order Yee convergence, roundoff-scale spectral error, and rejection of a wrong magnetic-wave sign.",
+      "evidence": [
+        "assurance/output/fdtd_spectral_integration_receipt.json"
+      ],
+      "nonclaims": [
+        "Three levels do not constitute a universal convergence theorem."
+      ]
+    }
+  ]
+}
