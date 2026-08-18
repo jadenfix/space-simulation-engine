@@ -1,0 +1,176 @@
+name: install-covariant-em-assurance
+
+on:
+  push:
+    branches:
+      - agent/bootstrap-space-simulation-engine
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/bootstrap-space-simulation-engine
+          fetch-depth: 0
+
+      - name: Integrate covariant electromagnetic assurance
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f assurance/include/spacewind/covariant_em.h
+          test -f assurance/src/covariant_em.c
+          test -f assurance/tests/test_covariant_em.c
+          test -f docs/COVARIANT_STRESS_ENERGY.md
+          python3 - <<'PY'
+          from pathlib import Path
+
+          cmake = Path('assurance/CMakeLists.txt')
+          text = cmake.read_text(encoding='utf-8')
+          if 'src/covariant_em.c' not in text:
+              anchor = '    src/core.c\n'
+              if anchor not in text:
+                  raise SystemExit('CMake source anchor missing')
+              text = text.replace(
+                  anchor,
+                  anchor + '    src/covariant_em.c\n',
+                  1,
+              )
+          if 'spacewind_assurance_covariant_em' not in text:
+              anchor = (
+                  'add_assurance_test(spacewind_assurance_core '
+                  'tests/test_assurance.c)\n'
+              )
+              if anchor not in text:
+                  raise SystemExit('CMake test anchor missing')
+              text = text.replace(
+                  anchor,
+                  anchor +
+                  'add_assurance_test(spacewind_assurance_covariant_em '
+                  'tests/test_covariant_em.c)\n',
+                  1,
+              )
+          cmake.write_text(text, encoding='utf-8')
+
+          makefile = Path('assurance/Makefile')
+          text = makefile.read_text(encoding='utf-8')
+          if 'src/covariant_em.c' not in text:
+              anchor = '\tsrc/core.c \\\n'
+              if anchor not in text:
+                  raise SystemExit('Make source anchor missing')
+              text = text.replace(
+                  anchor,
+                  anchor + '\tsrc/covariant_em.c \\\n',
+                  1,
+              )
+          line = next(
+              value for value in text.splitlines()
+              if value.startswith('TEST_NAMES :=')
+          )
+          if 'covariant_em' not in line.split():
+              text = text.replace(line, line + ' covariant_em', 1)
+          makefile.write_text(text, encoding='utf-8')
+
+          root = Path('ASSURANCE.md')
+          text = root.read_text(encoding='utf-8')
+          link = (
+              '- [`docs/COVARIANT_STRESS_ENERGY.md`]'
+              '(docs/COVARIANT_STRESS_ENERGY.md)\n'
+          )
+          if link not in text:
+              anchor = (
+                  '- [`docs/MAXWELL1D_SPECTRAL_REFERENCE.md`]'
+                  '(docs/MAXWELL1D_SPECTRAL_REFERENCE.md)\n'
+              )
+              if anchor not in text:
+                  anchor = (
+                      '- [`docs/SPECTRAL_POISSON_AUDIT.md`]'
+                      '(docs/SPECTRAL_POISSON_AUDIT.md)\n'
+                  )
+              if anchor not in text:
+                  raise SystemExit('ASSURANCE documentation anchor missing')
+              text = text.replace(anchor, anchor + link, 1)
+          root.write_text(text, encoding='utf-8')
+
+          readme = Path('assurance/README.md')
+          text = readme.read_text(encoding='utf-8')
+          marker = '### Covariant stress-energy and four-momentum\n'
+          if marker not in text:
+              addition = '''### Covariant stress-energy and four-momentum
+
+The special-relativistic assurance layer constructs the electromagnetic field
+and stress-energy tensors, Lorentz boosts, four-current, four-force density,
+particle four-momentum, and a field-plus-matter four-momentum ledger. Thousands
+of deterministic boosts must preserve scalar invariants, tensor covariance,
+the dominant-energy bound, particle mass shells, and inverse transformations.
+See [`docs/COVARIANT_STRESS_ENERGY.md`](../docs/COVARIANT_STRESS_ENERGY.md).
+
+'''
+              anchor = '### Cross-environment validity\n'
+              if anchor not in text:
+                  raise SystemExit('assurance README anchor missing')
+              text = text.replace(anchor, addition + anchor, 1)
+          readme.write_text(text, encoding='utf-8')
+          PY
+          rm -f .github/workflows/install-covariant-em-assurance.yml
+          git diff --check
+
+      - name: Strict GCC complete assurance matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S assurance -B /tmp/build-gcc \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=gcc \
+            -DSPACEWIND_ASSURANCE_WERROR=ON
+          cmake --build /tmp/build-gcc --parallel 2
+          ctest --test-dir /tmp/build-gcc --output-on-failure
+
+      - name: Strict Clang complete assurance matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S assurance -B /tmp/build-clang \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=clang \
+            -DSPACEWIND_ASSURANCE_WERROR=ON
+          cmake --build /tmp/build-clang --parallel 2
+          ctest --test-dir /tmp/build-clang --output-on-failure
+
+      - name: Sanitizers and standalone Make
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S assurance -B /tmp/build-sanitized \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang \
+            -DSPACEWIND_ASSURANCE_WERROR=ON \
+            -DSPACEWIND_ASSURANCE_SANITIZERS=ON
+          cmake --build /tmp/build-sanitized --parallel 2
+          ASAN_OPTIONS=detect_leaks=1:strict_string_checks=1 \
+          UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
+            ctest --test-dir /tmp/build-sanitized --output-on-failure \
+            -R covariant_em
+          make -C assurance clean test
+
+      - name: Preserve root-engine regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          make clean
+          make CFLAGS='-std=c11 -O2 -g -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wstrict-prototypes -Werror' all test
+
+      - name: Commit validated integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'feat: integrate covariant stress-energy assurance'
+          git push origin HEAD:agent/bootstrap-space-simulation-engine
