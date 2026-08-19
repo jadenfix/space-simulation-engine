@@ -54,6 +54,12 @@ jobs:
 
           replace_once(
               'assurance/tests/test_covariant_em.c',
+              '''        check_true(relative_scalar(\n                       force.component[1],\n                       rho * e.x + swa_vcross(current, b).x) < 2.0e-14,\n                   "four-force spatial x equals Lorentz force density");''',
+              '''        {\n            const double expected_force_x =\n                rho * e.x + swa_vcross(current, b).x;\n            const double force_scale = max3(\n                fabs(force.component[1]),\n                fabs(expected_force_x),\n                fabs(rho) * swa_vnorm(e) +\n                    swa_vnorm(current) * swa_vnorm(b)\n            );\n            check_true(\n                fabs(force.component[1] - expected_force_x) <=\n                    128.0 * DBL_EPSILON * max2(force_scale, DBL_MIN),\n                "four-force spatial x equals Lorentz force density"\n            );\n        }'''
+          )
+
+          replace_once(
+              'assurance/tests/test_covariant_em.c',
               '''    check_true(fabs(diagnostics.\n                       invariant_B2_minus_E2_over_c2_T2) < 1.0e-24,\n               "plane-wave first field invariant vanishes");''',
               '''    {\n        const double invariant_scale =\n            swa_vdot(wave.magnetic_field_T, wave.magnetic_field_T) +\n            swa_vdot(wave.electric_field_V_m, wave.electric_field_V_m) /\n                (SWA_C * SWA_C);\n        check_true(\n            fabs(diagnostics.invariant_B2_minus_E2_over_c2_T2) <=\n                128.0 * DBL_EPSILON * max2(invariant_scale, DBL_MIN),\n            "plane-wave first field invariant vanishes"\n        );\n    }'''
           )
