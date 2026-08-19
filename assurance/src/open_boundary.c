@@ -4,8 +4,6 @@
 #include <math.h>
 #include <string.h>
 
-static double max2(double a, double b) { return a > b ? a : b; }
-
 static int finite_vec3(swa_vec3 value) {
     return isfinite(value.x) && isfinite(value.y) && isfinite(value.z);
 }
