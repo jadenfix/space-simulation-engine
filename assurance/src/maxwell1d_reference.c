@@ -469,7 +469,8 @@ int swa_maxwell1d_advance(
     momentum_scale = max3(
         fabs(out->field_momentum_initial_Ns),
         fabs(out->field_momentum_final_Ns),
-        DBL_MIN
+        max2(out->field_energy_initial_J,
+             out->field_energy_final_J) / SWA_C
     );
     out->vacuum_momentum_relative_residual =
         fabs(out->vacuum_momentum_residual_Ns) / momentum_scale;

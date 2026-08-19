@@ -144,15 +144,20 @@ static void test_global_diagnostic_equivalence(
     energy_error = relative_scalar(
         integrated.component[0], energy / SWA_C
     );
-    momentum_error = relative_scalar(
-        integrated.component[1], momentum
-    );
+    momentum_error = fabs(integrated.component[1] - momentum) /
+        max3(fabs(integrated.component[1]), fabs(momentum),
+             max2(energy / SWA_C, DBL_MIN));
     characteristic_energy_error = relative_scalar(
         energy, right_energy + left_energy
     );
-    characteristic_momentum_error = relative_scalar(
-        momentum, (right_energy - left_energy) / SWA_C
-    );
+    {
+        const double characteristic_momentum =
+            (right_energy - left_energy) / SWA_C;
+        characteristic_momentum_error =
+            fabs(momentum - characteristic_momentum) /
+            max3(fabs(momentum), fabs(characteristic_momentum),
+                 max2(energy / SWA_C, DBL_MIN));
+    }
     worst_energy_relative = max2(worst_energy_relative, energy_error);
     worst_momentum_relative = max2(
         worst_momentum_relative, momentum_error

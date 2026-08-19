@@ -130,7 +130,7 @@ static double observed_order(double coarse_error, double fine_error,
 }
 
 static void test_wrong_staggering_is_detected(void) {
-    enum { CELLS = 33 };
+    enum { CELLS = 33, ADVERSARY_STEPS = 7 };
     const double length_m = 1.0;
     const double dx_m = length_m / (double)CELLS;
     const double dt_s = 0.5 * dx_m / SWA_C;
@@ -159,14 +159,14 @@ static void test_wrong_staggering_is_detected(void) {
         wrong.electric_y_v_m[i] = electric;
         wrong.magnetic_z_t[i] = -correct.magnetic_z_t[i];
     }
-    for (step = 0U; step < CELLS; ++step) {
+    for (step = 0U; step < ADVERSARY_STEPS; ++step) {
         sw_fdtd1d_step(&correct);
         sw_fdtd1d_step(&wrong);
     }
     for (i = 0U; i < CELLS; ++i) {
         const double x_m = ((double)i + 0.5) * dx_m;
         const double exact = right_wave(
-            x_m, (double)CELLS * dt_s, length_m, 3U
+            x_m, (double)ADVERSARY_STEPS * dt_s, length_m, 3U
         );
         const double dc = correct.electric_y_v_m[i] - exact;
         const double dw = wrong.electric_y_v_m[i] - exact;

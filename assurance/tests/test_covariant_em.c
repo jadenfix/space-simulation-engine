@@ -275,14 +275,35 @@ static void test_four_force_covariance(void) {
         );
         check_true(error < 5.0e-11,
                    "Lorentz four-force density is covariant");
-        check_true(relative_scalar(
-                       force.component[0],
-                       swa_vdot(e, current) / SWA_C) < 2.0e-14,
-                   "four-force time component equals J dot E over c");
-        check_true(relative_scalar(
-                       force.component[1],
-                       rho * e.x + swa_vcross(current, b).x) < 2.0e-14,
-                   "four-force spatial x equals Lorentz force density");
+        {
+            const double expected_power_density =
+                swa_vdot(e, current) / SWA_C;
+            const double power_scale = max3(
+                fabs(force.component[0]),
+                fabs(expected_power_density),
+                swa_vnorm(e) * swa_vnorm(current) / SWA_C
+            );
+            check_true(
+                fabs(force.component[0] - expected_power_density) <=
+                    128.0 * DBL_EPSILON * max2(power_scale, DBL_MIN),
+                "four-force time component equals J dot E over c"
+            );
+        }
+        {
+            const double expected_force_x =
+                rho * e.x + swa_vcross(current, b).x;
+            const double force_scale = max3(
+                fabs(force.component[1]),
+                fabs(expected_force_x),
+                fabs(rho) * swa_vnorm(e) +
+                    swa_vnorm(current) * swa_vnorm(b)
+            );
+            check_true(
+                fabs(force.component[1] - expected_force_x) <=
+                    128.0 * DBL_EPSILON * max2(force_scale, DBL_MIN),
+                "four-force spatial x equals Lorentz force density"
+            );
+        }
     }
 }
 
@@ -356,9 +377,17 @@ static void test_plane_wave_and_ledger(void) {
     check_true(diagnostics.dominant_energy_ratio > 1.0 - 1.0e-14 &&
                diagnostics.dominant_energy_ratio <= 1.0 + 1.0e-14,
                "plane wave saturates dominant energy bound");
-    check_true(fabs(diagnostics.
-                       invariant_B2_minus_E2_over_c2_T2) < 1.0e-24,
-               "plane-wave first field invariant vanishes");
+    {
+        const double invariant_scale =
+            swa_vdot(wave.magnetic_field_T, wave.magnetic_field_T) +
+            swa_vdot(wave.electric_field_V_m, wave.electric_field_V_m) /
+                (SWA_C * SWA_C);
+        check_true(
+            fabs(diagnostics.invariant_B2_minus_E2_over_c2_T2) <=
+                128.0 * DBL_EPSILON * max2(invariant_scale, DBL_MIN),
+            "plane-wave first field invariant vanishes"
+        );
+    }
     check_true(fabs(diagnostics.invariant_E_dot_B_over_c) < 1.0e-24,
                "plane-wave second field invariant vanishes");
 

@@ -1,0 +1,31 @@
+{
+  "schema": "spacewind.field-particle-ledger/v1",
+  "charge_continuity": {
+    "local_rms_A_m3": 3.8126430604176163e-20,
+    "local_max_A_m3": 8.1315162936412833e-20,
+    "global_residual_C_m": 0,
+    "divergence_theorem_error_C_m": 4.8789097761847696e-22,
+    "passes": true
+  },
+  "gauss_law": {
+    "rms_C_m3": 0,
+    "max_C_m3": 0,
+    "passes": true
+  },
+  "magnetic_divergence": {
+    "rms_T_m": 1.5122305524831249e-23,
+    "max_T_m": 6.6174449004242214e-23,
+    "passes": true
+  },
+  "poynting_energy": {
+    "residual_J": 0,
+    "relative_residual": 0,
+    "passes": true
+  },
+  "field_momentum": {
+    "residual_Ns": [-2.7755575615628914e-17, -2.2204460492503131e-16, 0],
+    "relative_residual": 5.1872088035329588e-17,
+    "passes": true
+  },
+  "nonclaim": "ledger closure verifies declared discrete bookkeeping only; it does not establish a realizable plasma-wing force"
+}

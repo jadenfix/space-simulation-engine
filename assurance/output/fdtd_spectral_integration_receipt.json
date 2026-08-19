@@ -1,0 +1,11 @@
+{
+  "schema": "spacewind.fdtd-spectral-integration/v1",
+  "cells": [33, 65, 129],
+  "courant": [0.50000000000000011, 0.5, 0.49999999999999994],
+  "relative_l2_error": [0.096527181174265064, 0.024799856164921672, 0.0062905360795160719],
+  "spectral_relative_l2_error": [5.3734857621462598e-15, 9.6134066325736429e-15, 1.9483458739277323e-14],
+  "relative_energy_change": [-3.8715357577885175e-06, -1.699540958280623e-08, -7.0474160147759222e-11],
+  "observed_order": [2.0047609754827564, 2.0013732937769602],
+  "passes": true,
+  "nonclaim": "this bounded cross-method test verifies the one-polarization periodic Yee update against an independent exact spectral Maxwell oracle; it does not establish electromagnetic PIC conservation or plasma-wing thrust"
+}
