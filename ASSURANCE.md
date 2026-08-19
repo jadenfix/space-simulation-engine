@@ -4,10 +4,11 @@ Spacewind's independent assurance kernel lives under [`assurance/`](assurance/).
 It checks dimensions, intervals, convergence, control-volume conservation,
 discrete field-and-particle ledgers, charge-compatible particle transport,
 periodic spectral Poisson and Gauss-law identities, exact periodic Maxwell
-references, covariant stress-energy and four-momentum identities, relativistic
-and electromagnetic invariants, heliospheric flux identities, force upper
-bounds, closed-cycle energy accounting, chamber force reversals, independent
-replication, and fail-closed scientific claim promotion.
+references, covariant stress-energy and four-momentum identities, open-boundary
+Poynting/Maxwell-stress transport, relativistic and electromagnetic invariants,
+heliospheric flux identities, force upper bounds, closed-cycle energy accounting,
+chamber force reversals, independent replication, and fail-closed scientific
+claim promotion.
 
 The detailed contract is documented in:
 
@@ -20,6 +21,7 @@ The detailed contract is documented in:
 - [`docs/MAXWELL1D_SPECTRAL_REFERENCE.md`](docs/MAXWELL1D_SPECTRAL_REFERENCE.md)
 - [`docs/EM_PIC1D_REFERENCE.md`](docs/EM_PIC1D_REFERENCE.md)
 - [`docs/EM_PIC1D_COVARIANT_INTEGRATION.md`](docs/EM_PIC1D_COVARIANT_INTEGRATION.md)
+- [`docs/OPEN_BOUNDARY_FOUR_MOMENTUM.md`](docs/OPEN_BOUNDARY_FOUR_MOMENTUM.md)
 - [`docs/FDTD_SPECTRAL_CROSSCHECK.md`](docs/FDTD_SPECTRAL_CROSSCHECK.md)
 - [`docs/COVARIANT_STRESS_ENERGY.md`](docs/COVARIANT_STRESS_ENERGY.md)
 - [`docs/MAXWELL_COVARIANT_INTEGRATION.md`](docs/MAXWELL_COVARIANT_INTEGRATION.md)
