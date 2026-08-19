@@ -1,0 +1,154 @@
+name: install-em-pic3d-reference
+
+on:
+  push:
+    branches:
+      - agent/bootstrap-space-simulation-engine
+
+permissions:
+  contents: write
+
+concurrency:
+  group: install-em-pic3d-reference
+  cancel-in-progress: false
+
+jobs:
+  install:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/bootstrap-space-simulation-engine
+          fetch-depth: 0
+
+      - name: Reconstruct and verify immutable 3D3V payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/em-pic3d-payload/part-* > /tmp/em-pic3d-payload.b64
+          echo 'b23ef0aeb1ab89a9148c25f8f6df7354363bda5248fba6542b48021042adf08b  /tmp/em-pic3d-payload.b64' | sha256sum -c -
+          base64 -d /tmp/em-pic3d-payload.b64 > /tmp/em-pic3d-payload.tar.gz
+          echo '3d128d8601d3bee5f7129012615c3c19a231e00a4dec5fc8390838431a6ae455  /tmp/em-pic3d-payload.tar.gz' | sha256sum -c -
+          rm -rf /tmp/em-pic3d-materialized
+          mkdir -p /tmp/em-pic3d-materialized
+          tar -xzf /tmp/em-pic3d-payload.tar.gz -C /tmp/em-pic3d-materialized
+          cd /tmp/em-pic3d-materialized
+          cat > /tmp/em-pic3d-files.sha256 <<'SUMS'
+          599a41e0dd16a8951872c8501cd6e6481ace2c1179799a1e8ae49c51f535c8c3  ./ASSURANCE.md
+          9a61ac3fa3e6563561b55b70ad833c3f50b9e0fa933ffdbc64408fb466e9ec5b  ./assurance/CMakeLists.txt
+          32a494149d86dc53cdb3242fa778a1038c4555001d5d286ab68c0f8e2b8d0781  ./assurance/Makefile
+          0727d6ed09b63eaf22ecbbff1948a7105a668ec584649eadf4ef1bcbd549c348  ./assurance/README.md
+          bc8b172eb1fce07cc51690565a828571cea94485feae0ede4f5f8428ec032a92  ./assurance/include/spacewind/em_pic3d.h
+          2efbc8d563244a46add319e4401828ce7e48caa5230a5c24a47075e2bf4ffc5a  ./assurance/include/spacewind/four_momentum_delta.h
+          bdbc1a7a09e50f6834ab3900151772f457860a7f55e828880ffa910dec1523cb  ./assurance/src/em_pic3d.c
+          3179e6e52e6812827965e380353c081d823413b4ef0988f53fb8d6395ba7b2e1  ./assurance/src/em_pic3d_deposition.inc
+          5f2de371aec13559457e0bc4d875b34c94899f424f81687fc3cd2c0c9e7d3fff  ./assurance/src/em_pic3d_diagnostics.inc
+          88cc41ccf3d36d90d89ecd60df4abd352a44dc385b683040ebe048265f393a33  ./assurance/src/em_pic3d_spectral.inc
+          e50977ab76e240f39fb72610266d5733a20e449d99bde6e42cada2c44aa72cc7  ./assurance/src/em_pic3d_step.inc
+          bd24f52367e4beb00961ac49a419b25caeb3276b89e900c8e56e40786f8039c3  ./assurance/src/em_pic3d_support.inc
+          bc6de02348f9edbd8614183027b4555a567d14e32736a0bce3bb62ecf841d943  ./assurance/src/four_momentum_delta.c
+          e5b8b22a333d58da972d7f58eb43975d322e51b359a98a22fef8dfabf63365f2  ./assurance/tests/test_em_pic3d.c
+          6d5605f497f78164a21d5dd271eff4182e53996c093898c110d8eaa9c465f0b5  ./assurance/tests/test_em_pic3d_covariant_integration.c
+          1c2719e8caf2d0627ed06821fe41bb6c0b5014cbf1afe33356ce88cb17f54dcf  ./claims/em-pic3d-claims.json
+          0f085d7b2d78c7d3d9ab39938b102bd22243f7de7d138451d3fcc9fed4f154f4  ./claims/em-pic3d-covariant-integration-claims.json
+          fc40322fdd1c904a4ff55f517fc9f70decfc76c508ca2ae534525fbd42e8316f  ./claims/four-momentum-delta-claims.json
+          08138c66458efdea6fa5613781ce1f208bd4d108ecb239d9fdab25d7851a55ff  ./docs/EM_PIC3D_COVARIANT_INTEGRATION.md
+          9c039437fe910fb74691562179d76d9dbb24e147c9a6071844bb78a3da5c70f3  ./docs/EM_PIC3D_REFERENCE.md
+          4263eb838ed9a07e270b43469d54677b7d440ca8103af7b263e729d8c590332d  ./docs/FOUR_MOMENTUM_DELTA_LEDGER.md
+          SUMS
+          sha256sum -c /tmp/em-pic3d-files.sha256
+
+      - name: Materialize source, tests, claims, and documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -a /tmp/em-pic3d-materialized/. .
+          git diff --check
+          python3 -m json.tool claims/em-pic3d-claims.json >/dev/null
+          python3 -m json.tool claims/em-pic3d-covariant-integration-claims.json >/dev/null
+          python3 -m json.tool claims/four-momentum-delta-claims.json >/dev/null
+
+      - name: Strict GCC and Clang validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          for compiler in gcc clang; do
+            rm -rf "/tmp/em-pic3d-$compiler"
+            cmake -S assurance -B "/tmp/em-pic3d-$compiler" \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER="$compiler" \
+              -DSPACEWIND_ASSURANCE_WERROR=ON
+            cmake --build "/tmp/em-pic3d-$compiler" --parallel 2
+            ctest --test-dir "/tmp/em-pic3d-$compiler" --output-on-failure
+          done
+          make -C assurance clean test
+
+      - name: Sanitizer validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/em-pic3d-sanitized
+          cmake -S assurance -B /tmp/em-pic3d-sanitized \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang \
+            -DSPACEWIND_ASSURANCE_SANITIZERS=ON \
+            -DSPACEWIND_ASSURANCE_WERROR=ON
+          cmake --build /tmp/em-pic3d-sanitized --parallel 2
+          ASAN_OPTIONS=detect_leaks=1:strict_string_checks=1:check_initialization_order=1 \
+          UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
+            ctest --test-dir /tmp/em-pic3d-sanitized --output-on-failure
+
+      - name: Independent static analysis and deterministic replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/em-pic3d-clang-analysis /tmp/em-pic3d-gcc-analysis
+          for source in assurance/src/em_pic3d.c assurance/src/four_momentum_delta.c; do
+            clang --analyze -std=c11 -Wall -Wextra -Wpedantic \
+              -Iassurance/include -Xanalyzer -analyzer-output=text \
+              "$source" -o "/tmp/em-pic3d-clang-analysis/$(basename "$source").plist"
+            gcc -std=c11 -O0 -Wall -Wextra -Wpedantic -Wconversion -Wshadow \
+              -Wstrict-prototypes -fanalyzer -Iassurance/include -c "$source" \
+              -o "/tmp/em-pic3d-gcc-analysis/$(basename "$source").o"
+          done
+          rm -f assurance/output/*.json
+          ctest --test-dir /tmp/em-pic3d-gcc --output-on-failure
+          find assurance/output -maxdepth 1 -name '*.json' -print0 | sort -z | \
+            xargs -0 sha256sum > /tmp/em-pic3d-first.sha256
+          rm -f assurance/output/*.json
+          ctest --test-dir /tmp/em-pic3d-gcc --output-on-failure
+          find assurance/output -maxdepth 1 -name '*.json' -print0 | sort -z | \
+            xargs -0 sha256sum > /tmp/em-pic3d-second.sha256
+          diff -u /tmp/em-pic3d-first.sha256 /tmp/em-pic3d-second.sha256
+
+      - name: Publish verified 3D3V reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ASSURANCE.md assurance/CMakeLists.txt assurance/Makefile assurance/README.md \
+            assurance/include/spacewind/em_pic3d.h \
+            assurance/include/spacewind/four_momentum_delta.h \
+            assurance/src/em_pic3d.c \
+            assurance/src/em_pic3d_support.inc \
+            assurance/src/em_pic3d_deposition.inc \
+            assurance/src/em_pic3d_spectral.inc \
+            assurance/src/em_pic3d_diagnostics.inc \
+            assurance/src/em_pic3d_step.inc \
+            assurance/src/four_momentum_delta.c \
+            assurance/tests/test_em_pic3d.c \
+            assurance/tests/test_em_pic3d_covariant_integration.c \
+            docs/EM_PIC3D_REFERENCE.md \
+            docs/EM_PIC3D_COVARIANT_INTEGRATION.md \
+            docs/FOUR_MOMENTUM_DELTA_LEDGER.md \
+            claims/em-pic3d-claims.json \
+            claims/em-pic3d-covariant-integration-claims.json \
+            claims/four-momentum-delta-claims.json
+          git rm -r .github/em-pic3d-payload
+          git rm .github/workflows/install-em-pic3d-reference.yml
+          git diff --cached --check
+          git commit -m 'feat: add audited periodic 3D3V electromagnetic PIC reference'
+          git pull --rebase origin agent/bootstrap-space-simulation-engine
+          git push origin HEAD:agent/bootstrap-space-simulation-engine
