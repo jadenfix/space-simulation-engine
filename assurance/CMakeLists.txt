@@ -20,6 +20,7 @@ add_library(spacewind_assurance STATIC
     src/spectral_poisson.c
     src/maxwell1d_reference.c
     src/covariant_em.c
+    src/em_pic1d.c
 )
 target_include_directories(spacewind_assurance PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -75,6 +76,7 @@ add_assurance_test(spacewind_assurance_spectral_poisson tests/test_spectral_pois
 add_assurance_test(spacewind_assurance_maxwell1d_reference tests/test_maxwell1d_reference.c)
 add_assurance_test(spacewind_assurance_covariant_em tests/test_covariant_em.c)
 add_assurance_test(spacewind_assurance_maxwell_covariant_integration tests/test_maxwell_covariant_integration.c)
+add_assurance_test(spacewind_assurance_em_pic1d tests/test_em_pic1d.c)
 
 set(SPACEWIND_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
 if(SPACEWIND_ASSURANCE_ENGINE_INTEGRATION AND
