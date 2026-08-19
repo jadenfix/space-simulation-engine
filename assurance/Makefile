@@ -14,13 +14,16 @@ LIBSRC := \
 	src/evidence.c \
 	src/field_ledger.c \
 	src/charge_deposition.c \
-	src/spectral_poisson.c
+	src/spectral_poisson.c \
+	src/maxwell1d_reference.c \
+	src/covariant_em.c
 LIBOBJ := $(patsubst src/%.c,$(BUILD)/%.o,$(LIBSRC))
-TEST_NAMES := assurance invariants experiment evidence field_ledger charge_deposition spectral_poisson
+TEST_NAMES := assurance invariants experiment evidence field_ledger charge_deposition spectral_poisson maxwell1d_reference covariant_em maxwell_covariant_integration
 UNIT_TEST_BINS := $(addprefix $(BUILD)/test_,$(TEST_NAMES))
 PIC_TRANSPORT_TEST_BIN := $(BUILD)/test_pic_transport_integration
 SPECTRAL_INTEGRATION_TEST_BIN := $(BUILD)/test_spectral_poisson_integration
-INTEGRATION_TEST_BINS := $(PIC_TRANSPORT_TEST_BIN) $(SPECTRAL_INTEGRATION_TEST_BIN)
+FDTD_SPECTRAL_TEST_BIN := $(BUILD)/test_fdtd_spectral_integration
+INTEGRATION_TEST_BINS := $(PIC_TRANSPORT_TEST_BIN) $(SPECTRAL_INTEGRATION_TEST_BIN) $(FDTD_SPECTRAL_TEST_BIN)
 TEST_BINS := $(UNIT_TEST_BINS) $(INTEGRATION_TEST_BINS)
 
 .PHONY: all test clean asan ubsan
@@ -43,6 +46,11 @@ $(PIC_TRANSPORT_TEST_BIN): tests/test_pic_transport_integration.c $(LIBOBJ) ../s
 $(SPECTRAL_INTEGRATION_TEST_BIN): tests/test_spectral_poisson_integration.c $(LIBOBJ) ../src/plasma.c ../src/math3.c | $(BUILD)
 	$(CC) $(CPPFLAGS) -I../include $(CFLAGS) $(LDFLAGS) \
 		tests/test_spectral_poisson_integration.c ../src/plasma.c ../src/math3.c \
+		$(LIBOBJ) $(LDLIBS) -o $@
+
+$(FDTD_SPECTRAL_TEST_BIN): tests/test_fdtd_spectral_integration.c $(LIBOBJ) ../src/plasma.c ../src/math3.c | $(BUILD)
+	$(CC) $(CPPFLAGS) -I../include $(CFLAGS) $(LDFLAGS) \
+		tests/test_fdtd_spectral_integration.c ../src/plasma.c ../src/math3.c \
 		$(LIBOBJ) $(LDLIBS) -o $@
 
 test: $(TEST_BINS) | $(OUTPUT)

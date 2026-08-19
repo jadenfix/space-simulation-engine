@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(spacewind_assurance VERSION 0.5.0 LANGUAGES C)
+project(spacewind_assurance VERSION 0.6.0 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -18,6 +18,8 @@ add_library(spacewind_assurance STATIC
     src/field_ledger.c
     src/charge_deposition.c
     src/spectral_poisson.c
+    src/maxwell1d_reference.c
+    src/covariant_em.c
 )
 target_include_directories(spacewind_assurance PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -70,6 +72,9 @@ add_assurance_test(spacewind_assurance_evidence tests/test_evidence.c)
 add_assurance_test(spacewind_assurance_field_ledger tests/test_field_ledger.c)
 add_assurance_test(spacewind_assurance_charge_deposition tests/test_charge_deposition.c)
 add_assurance_test(spacewind_assurance_spectral_poisson tests/test_spectral_poisson.c)
+add_assurance_test(spacewind_assurance_maxwell1d_reference tests/test_maxwell1d_reference.c)
+add_assurance_test(spacewind_assurance_covariant_em tests/test_covariant_em.c)
+add_assurance_test(spacewind_assurance_maxwell_covariant_integration tests/test_maxwell_covariant_integration.c)
 
 set(SPACEWIND_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
 if(SPACEWIND_ASSURANCE_ENGINE_INTEGRATION AND
@@ -101,6 +106,10 @@ if(SPACEWIND_ASSURANCE_ENGINE_INTEGRATION AND
         spacewind_assurance_spectral_poisson_integration
         tests/test_spectral_poisson_integration.c
     )
+    add_pic_engine_integration_test(
+        spacewind_assurance_fdtd_spectral_integration
+        tests/test_fdtd_spectral_integration.c
+    )
 elseif(SPACEWIND_ASSURANCE_ENGINE_INTEGRATION)
-    message(STATUS "Root engine sources unavailable; skipping cross-layer PIC integration")
+    message(STATUS "Root engine sources unavailable; skipping cross-layer PIC/FDTD integration")
 endif()
