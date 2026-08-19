@@ -1,8 +1,0 @@
-{
-  "schema": "spacewind.assurance/v1",
-  "checks": 36,
-  "failures": 0,
-  "deterministic_hash": "8e7a41fa2e66b713",
-  "claim": "finite deterministic assurance checks only",
-  "nonclaim": "passing checks do not establish physical propulsion or net energy extraction"
-}
