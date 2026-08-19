@@ -1,0 +1,6 @@
+# The staged EM-PIC reference payload is content-addressed. Preserve its verified
+# include-fragment bytes during materialization; blank-at-EOF is not semantic C.
+assurance/src/em_pic1d_deposition.inc whitespace=-blank-at-eof
+assurance/src/em_pic1d_diagnostics.inc whitespace=-blank-at-eof
+assurance/src/em_pic1d_step.inc whitespace=-blank-at-eof
+assurance/src/em_pic1d_support.inc whitespace=-blank-at-eof
