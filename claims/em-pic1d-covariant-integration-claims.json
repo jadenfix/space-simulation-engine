@@ -1,0 +1,57 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-em-pic1d-covariant-integration",
+  "version": "0.1.0",
+  "claims": [
+    {
+      "id": "SW-EPC-0001",
+      "type": "equation_implementation",
+      "statement": "The bounded 1D3V electromagnetic PIC step is mapped into a field-plus-matter four-momentum ledger using field energy/Poynting momentum and relativistic particle energy/momentum from the same accepted timestep.",
+      "evidence": [
+        "assurance/tests/test_em_pic1d_covariant_integration.c",
+        "docs/EM_PIC1D_COVARIANT_INTEGRATION.md"
+      ],
+      "nonclaims": [
+        "The mapping does not make the explicit PIC algorithm exactly energy- or momentum-conserving.",
+        "A periodic 1D3V ledger is not a multidimensional plasma-wing force model."
+      ]
+    },
+    {
+      "id": "SW-EPC-0002",
+      "type": "finite_check",
+      "statement": "The four-momentum residual reproduces the independently reported EM-PIC total energy and momentum residuals, and its acceptance scale excludes constant particle rest energy so conservation defects cannot be hidden by rest-mass dominance.",
+      "evidence": [
+        "assurance/tests/test_em_pic1d_covariant_integration.c",
+        "assurance/output/em_pic1d_covariant_receipt.json"
+      ],
+      "nonclaims": [
+        "The declared finite tolerance is not a proof of convergence for arbitrary plasma states."
+      ]
+    },
+    {
+      "id": "SW-EPC-0003",
+      "type": "finite_check",
+      "statement": "The numerical four-momentum residual transforms covariantly under an oblique Lorentz boost, while an injected untracked spatial four-impulse is rejected.",
+      "evidence": [
+        "assurance/tests/test_em_pic1d_covariant_integration.c",
+        "assurance/output/em_pic1d_covariant_receipt.json"
+      ],
+      "nonclaims": [
+        "Covariant bookkeeping does not establish chamber similarity or propulsion."
+      ]
+    },
+    {
+      "id": "SW-EPC-0004",
+      "type": "open_problem",
+      "statement": "Promote the four-momentum ledger to a multidimensional open control volume with local particle flux, Poynting flux, Maxwell-stress impulse, and force/torque refinement.",
+      "required_evidence": [
+        "2D3V or 3D3V charge-conserving electromagnetic PIC",
+        "open-boundary field and particle flux ledgers",
+        "Maxwell-stress momentum transport",
+        "grid, timestep, particle-count, shape-order, and domain refinement",
+        "independent force and torque reconstruction",
+        "chamber-calibrated response surfaces"
+      ]
+    }
+  ]
+}

@@ -19,7 +19,7 @@ LIBSRC := \
 	src/covariant_em.c \
 	src/em_pic1d.c
 LIBOBJ := $(patsubst src/%.c,$(BUILD)/%.o,$(LIBSRC))
-TEST_NAMES := assurance invariants experiment evidence field_ledger charge_deposition spectral_poisson maxwell1d_reference covariant_em maxwell_covariant_integration em_pic1d
+TEST_NAMES := assurance invariants experiment evidence field_ledger charge_deposition spectral_poisson maxwell1d_reference covariant_em maxwell_covariant_integration em_pic1d em_pic1d_covariant_integration
 UNIT_TEST_BINS := $(addprefix $(BUILD)/test_,$(TEST_NAMES))
 PIC_TRANSPORT_TEST_BIN := $(BUILD)/test_pic_transport_integration
 SPECTRAL_INTEGRATION_TEST_BIN := $(BUILD)/test_spectral_poisson_integration
