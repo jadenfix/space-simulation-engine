@@ -199,6 +199,7 @@ jobs:
               'permissions:\n  contents: read\n',
               1,
           )
+          text = text.rstrip() + '\n'
           path.write_text(text, encoding='utf-8')
           PY
           git config user.name 'github-actions[bot]'
