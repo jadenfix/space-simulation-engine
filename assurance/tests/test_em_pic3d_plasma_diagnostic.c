@@ -103,13 +103,54 @@ static void print_result(const swa_em_pic3d_result *r, int executed) {
         r->field_work_relative, r->total_momentum_relative,
         r->maximum_speed_fraction_c);
     fprintf(stderr,
+        "DIAG charge[initial=%.17g final=%.17g change=%.17g] "
+        "continuity[max=%.17g rms=%.17g zero=%.17g] "
+        "current[raw_l2=%.17g correction_l2=%.17g correction_rel=%.17g "
+        "curl_rel=%.17g mean=(%.17g,%.17g,%.17g) "
+        "transport=(%.17g,%.17g,%.17g)]\n",
+        r->initial_charge_C, r->final_charge_C, r->charge_change_C,
+        r->continuity_residual_max_A_m3,
+        r->continuity_residual_rms_A_m3,
+        r->current_projection_zero_mode_A_m3,
+        r->raw_current_l2_A_m2,
+        r->current_correction_l2_A_m2,
+        r->current_correction_relative,
+        r->current_projection_curl_relative,
+        r->mean_current_A_m2.x,
+        r->mean_current_A_m2.y,
+        r->mean_current_A_m2.z,
+        r->transport_mean_current_A_m2.x,
+        r->transport_mean_current_A_m2.y,
+        r->transport_mean_current_A_m2.z);
+    fprintf(stderr,
         "DIAG work[particle_dE=%.17g field_dE=%.17g particle_JE=%.17g "
-        "field_JE=%.17g particle_res=%.17g field_res=%.17g total_res=%.17g]\n",
+        "field_JE=%.17g projection_work=%.17g particle_res=%.17g "
+        "field_res=%.17g total_res=%.17g]\n",
         r->particle_energy_change_J, r->field_energy_change_J,
         r->particle_midpoint_current_work_J,
         r->field_midpoint_current_work_J,
+        r->projection_work_correction_J,
         r->particle_work_residual_J, r->field_work_residual_J,
         r->total_energy_residual_J);
+    fprintf(stderr,
+        "DIAG momentum[particle0=(%.17g,%.17g,%.17g) "
+        "particle1=(%.17g,%.17g,%.17g) field0=(%.17g,%.17g,%.17g) "
+        "field1=(%.17g,%.17g,%.17g) residual=(%.17g,%.17g,%.17g)]\n",
+        r->initial_particle_momentum_Ns.x,
+        r->initial_particle_momentum_Ns.y,
+        r->initial_particle_momentum_Ns.z,
+        r->final_particle_momentum_Ns.x,
+        r->final_particle_momentum_Ns.y,
+        r->final_particle_momentum_Ns.z,
+        r->initial_field_momentum_Ns.x,
+        r->initial_field_momentum_Ns.y,
+        r->initial_field_momentum_Ns.z,
+        r->final_field_momentum_Ns.x,
+        r->final_field_momentum_Ns.y,
+        r->final_field_momentum_Ns.z,
+        r->total_momentum_residual_Ns.x,
+        r->total_momentum_residual_Ns.y,
+        r->total_momentum_residual_Ns.z);
 }
 
 int main(void) {
