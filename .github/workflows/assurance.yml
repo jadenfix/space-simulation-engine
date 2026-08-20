@@ -159,7 +159,8 @@ jobs:
           UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
             ctest --test-dir /tmp/transaction-sanitized --output-on-failure
           clang --analyze -std=c11 -Wall -Wextra -Wpedantic \
-            -Iassurance/include assurance/src/em_pic3d.c
+            -Iassurance/include assurance/src/em_pic3d.c \
+            -o /tmp/em_pic3d_transaction.plist
           gcc -std=c11 -O0 -Wall -Wextra -Wpedantic -Wconversion -Wshadow \
             -Wstrict-prototypes -fanalyzer -Iassurance/include \
             -c assurance/src/em_pic3d.c -o /tmp/em_pic3d_transaction.o
@@ -181,30 +182,15 @@ jobs:
         run: |
           set -euo pipefail
           rm -f .github/scripts/apply_em_pic3d_transaction.py
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path('.github/workflows/assurance.yml')
-          text = path.read_text(encoding='utf-8')
-          begin = '  # BEGIN TEMPORARY TRANSACTIONAL 3D3V REPAIR\n'
-          end = '  # END TEMPORARY TRANSACTIONAL 3D3V REPAIR\n'
-          start = text.find(begin)
-          finish = text.find(end)
-          if start < 0 or finish < 0 or finish < start:
-              raise SystemExit('temporary assurance job markers are missing')
-          finish += len(end)
-          text = text[:start] + text[finish:]
-          text = text.replace(
-              'permissions:\n  contents: write\n',
-              'permissions:\n  contents: read\n',
-              1,
-          )
-          text = text.rstrip() + '\n'
-          path.write_text(text, encoding='utf-8')
-          PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
+          git add \
+            assurance/include/spacewind/em_pic3d.h \
+            assurance/src/em_pic3d_step.inc \
+            assurance/tests/test_em_pic3d.c \
+            docs/EM_PIC3D_REFERENCE.md \
+            claims/em-pic3d-claims.json \
+            .github/scripts/apply_em_pic3d_transaction.py
           git diff --cached --check
           git commit -m 'fix: make 3D3V PIC step acceptance transactional'
           git pull --rebase origin agent/bootstrap-space-simulation-engine
