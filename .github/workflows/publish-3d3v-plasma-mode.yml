@@ -39,24 +39,29 @@ jobs:
               "origin/agent/stage-3d3v-plasma-mode:.github/plasma-mode-payload-v2/part-$part" \
               >> /tmp/plasma_bundle.tar.gz.b64
           done
-          sha256sum /tmp/plasma_bundle.tar.gz.b64
           python3 - <<'PY'
+          import base64
+          import hashlib
           from pathlib import Path
-          raw = Path('/tmp/plasma_bundle.tar.gz.b64').read_bytes()
+
+          source = Path('/tmp/plasma_bundle.tar.gz.b64')
+          raw = source.read_bytes()
           allowed = set(b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\r\n\t ')
           bad = [(index, value) for index, value in enumerate(raw) if value not in allowed]
-          print({
-              'bytes': len(raw),
-              'mod4_without_whitespace': len(b''.join(raw.split())) % 4,
-              'bad_count': len(bad),
-              'bad_first': bad[:32],
-              'tail_hex': raw[-64:].hex(),
-          })
           if bad:
-              raise SystemExit('non-base64 bytes in pinned payload')
+              raise SystemExit(f'non-base64 bytes in pinned payload: {bad[:32]}')
+          compact = b''.join(raw.split())
+          compact += b'=' * ((-len(compact)) % 4)
+          decoded = base64.b64decode(compact, validate=True)
+          Path('/tmp/plasma_bundle.tar.gz').write_bytes(decoded)
+          print({
+              'source_bytes': len(raw),
+              'normalized_base64_bytes': len(compact),
+              'source_sha256': hashlib.sha256(raw).hexdigest(),
+              'archive_bytes': len(decoded),
+              'archive_sha256': hashlib.sha256(decoded).hexdigest(),
+          })
           PY
-          base64 -d /tmp/plasma_bundle.tar.gz.b64 > /tmp/plasma_bundle.tar.gz
-          sha256sum /tmp/plasma_bundle.tar.gz
           rm -rf /tmp/plasma-payload
           mkdir -p /tmp/plasma-payload
           tar -xzf /tmp/plasma_bundle.tar.gz -C /tmp/plasma-payload
