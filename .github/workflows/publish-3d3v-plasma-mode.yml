@@ -40,6 +40,21 @@ jobs:
               >> /tmp/plasma_bundle.tar.gz.b64
           done
           sha256sum /tmp/plasma_bundle.tar.gz.b64
+          python3 - <<'PY'
+          from pathlib import Path
+          raw = Path('/tmp/plasma_bundle.tar.gz.b64').read_bytes()
+          allowed = set(b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\r\n\t ')
+          bad = [(index, value) for index, value in enumerate(raw) if value not in allowed]
+          print({
+              'bytes': len(raw),
+              'mod4_without_whitespace': len(b''.join(raw.split())) % 4,
+              'bad_count': len(bad),
+              'bad_first': bad[:32],
+              'tail_hex': raw[-64:].hex(),
+          })
+          if bad:
+              raise SystemExit('non-base64 bytes in pinned payload')
+          PY
           base64 -d /tmp/plasma_bundle.tar.gz.b64 > /tmp/plasma_bundle.tar.gz
           sha256sum /tmp/plasma_bundle.tar.gz
           rm -rf /tmp/plasma-payload
