@@ -32,9 +32,9 @@ jobs:
           git fetch --no-tags origin \
             agent/stage-3d3v-plasma-mode:refs/remotes/origin/agent/stage-3d3v-plasma-mode
           test "$(git rev-parse origin/agent/stage-3d3v-plasma-mode)" = \
-            'f0c2677ccd765e02282458bc33fd697ffcc5814a'
+            'bcf73536237d959951cf5343d526ef6a95ad510b'
           : > /tmp/plasma_bundle.tar.gz.b64
-          for part in 00 01 02 03; do
+          for part in 00 01 02a 02b 03; do
             git show \
               "origin/agent/stage-3d3v-plasma-mode:.github/plasma-mode-payload-v2/part-$part" \
               >> /tmp/plasma_bundle.tar.gz.b64
