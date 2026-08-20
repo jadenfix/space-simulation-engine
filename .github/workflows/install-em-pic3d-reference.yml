@@ -32,9 +32,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .github/em-pic3d-payload/part-* > /tmp/em-pic3d-payload.b64
+          cat .github/em-pic3d-payload/part-* | tr -d '[:space:]' > /tmp/em-pic3d-payload.b64
+          sha256sum /tmp/em-pic3d-payload.b64
           echo 'b23ef0aeb1ab89a9148c25f8f6df7354363bda5248fba6542b48021042adf08b  /tmp/em-pic3d-payload.b64' | sha256sum -c -
           base64 -d /tmp/em-pic3d-payload.b64 > /tmp/em-pic3d-payload.tar.gz
+          sha256sum /tmp/em-pic3d-payload.tar.gz
           echo '3d128d8601d3bee5f7129012615c3c19a231e00a4dec5fc8390838431a6ae455  /tmp/em-pic3d-payload.tar.gz' | sha256sum -c -
           rm -rf /tmp/em-pic3d-materialized
           mkdir -p /tmp/em-pic3d-materialized
