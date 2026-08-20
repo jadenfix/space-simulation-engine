@@ -65,6 +65,27 @@ static double pic3d_particle_momentum_scale_Ns(
     support.write_text(support_text, encoding="utf-8")
 
 replace_once(
+    "assurance/src/em_pic3d_diagnostics.inc",
+    r'''        const double gamma = 1.0 / sqrt(
+            1.0 - speed2 / (SWA_C * SWA_C)
+        );
+        swa_kahan_add(
+            &energy,
+            particles[p].macro_weight * particles[p].mass_kg *
+            SWA_C * SWA_C * (gamma - 1.0)
+        );''',
+    r'''        const double beta2 = speed2 / (SWA_C * SWA_C);
+        const double inverse_gamma = sqrt(1.0 - beta2);
+        const double gamma_minus_one =
+            beta2 / (inverse_gamma * (1.0 + inverse_gamma));
+        swa_kahan_add(
+            &energy,
+            particles[p].macro_weight * particles[p].mass_kg *
+            SWA_C * SWA_C * gamma_minus_one
+        );''',
+)
+
+replace_once(
     "assurance/src/em_pic3d_spectral.inc",
     r'''    swa_kahan squared = {0.0, 0.0};
     swa_kahan mean = {0.0, 0.0};
