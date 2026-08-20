@@ -1,0 +1,147 @@
+name: publish-3d3v-plasma-mode
+
+on:
+  push:
+    branches:
+      - agent/bootstrap-space-simulation-engine
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-3d3v-plasma-mode
+  cancel-in-progress: false
+
+jobs:
+  validate-and-publish:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout authoritative target branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/bootstrap-space-simulation-engine
+          fetch-depth: 0
+
+      - name: Fetch and verify immutable staged payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = '48b6f8fe8e1649d51c67e3e9ba883196b6515611'
+          git fetch --no-tags origin \
+            agent/stage-3d3v-plasma-mode:refs/remotes/origin/agent/stage-3d3v-plasma-mode
+          test "$(git rev-parse origin/agent/stage-3d3v-plasma-mode)" = \
+            '3e24802e173b504bf6e0540e0ee944647b99f43b'
+          : > /tmp/plasma_bundle.tar.gz.b64
+          for part in 00 01 02 03; do
+            git show \
+              "origin/agent/stage-3d3v-plasma-mode:.github/plasma-mode-payload/part-$part" \
+              >> /tmp/plasma_bundle.tar.gz.b64
+          done
+          echo '442b1b0df25627bf0940699304350c7c8ba3bd1eb9a9934b1138e3da2d537fcf  /tmp/plasma_bundle.tar.gz.b64' | sha256sum -c -
+          base64 -d /tmp/plasma_bundle.tar.gz.b64 > /tmp/plasma_bundle.tar.gz
+          echo '04769fb052c4428c3c0585990e084fd768fa8f384b52466c870ddd8ddaef1db0  /tmp/plasma_bundle.tar.gz' | sha256sum -c -
+          rm -rf /tmp/plasma-payload
+          mkdir -p /tmp/plasma-payload
+          tar -xzf /tmp/plasma_bundle.tar.gz -C /tmp/plasma-payload
+          python3 - <<'PY'
+          from pathlib import Path
+          expected = {
+              'ASSURANCE.md',
+              'assurance/CMakeLists.txt',
+              'assurance/Makefile',
+              'assurance/tests/test_em_pic3d_plasma_modes.c',
+              'claims/em-pic3d-plasma-modes-claims.json',
+              'claims/em-pic3d-reference-claims.json',
+              'docs/EM_PIC3D_PLASMA_MODE_VALIDATION.md',
+          }
+          root = Path('/tmp/plasma-payload')
+          observed = {
+              str(path.relative_to(root))
+              for path in root.rglob('*') if path.is_file()
+          }
+          if observed != expected:
+              raise SystemExit(
+                  f'payload manifest mismatch: observed={sorted(observed)}'
+              )
+          for path in root.rglob('*'):
+              if path.is_symlink():
+                  raise SystemExit(f'symlink forbidden in payload: {path}')
+          PY
+
+      - name: Apply bounded plasma-mode benchmark
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -a /tmp/plasma-payload/. .
+          git diff --check
+          python3 -m json.tool claims/em-pic3d-plasma-modes-claims.json >/dev/null
+          python3 -m json.tool claims/em-pic3d-reference-claims.json >/dev/null
+          grep -q 'spacewind_assurance_em_pic3d_plasma_modes' assurance/CMakeLists.txt
+          grep -q 'em_pic3d_plasma_modes' assurance/Makefile
+
+      - name: Strict GCC and Clang complete assurance graphs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for compiler in gcc clang; do
+            rm -rf "/tmp/plasma-$compiler"
+            cmake -S assurance -B "/tmp/plasma-$compiler" \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER="$compiler" \
+              -DSPACEWIND_ASSURANCE_WERROR=ON
+            cmake --build "/tmp/plasma-$compiler" --parallel 2
+            ctest --test-dir "/tmp/plasma-$compiler" --output-on-failure
+          done
+
+      - name: Standalone Make and root regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          make -C assurance clean test
+          make clean
+          make CFLAGS='-std=c11 -O2 -g -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wstrict-prototypes -Werror' all test
+
+      - name: Sanitizer validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/plasma-sanitized
+          cmake -S assurance -B /tmp/plasma-sanitized \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang \
+            -DSPACEWIND_ASSURANCE_SANITIZERS=ON \
+            -DSPACEWIND_ASSURANCE_WERROR=ON
+          cmake --build /tmp/plasma-sanitized --parallel 2
+          ASAN_OPTIONS=detect_leaks=1:strict_string_checks=1 \
+          UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
+            ctest --test-dir /tmp/plasma-sanitized --output-on-failure
+
+      - name: Show benchmark receipt and metrics
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd assurance
+          ./build/test_em_pic3d_plasma_modes
+          python3 -m json.tool output/em_pic3d_plasma_modes_receipt.json
+
+      - name: Publish only after all unchanged gates pass
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/publish-3d3v-plasma-mode.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A \
+            ASSURANCE.md \
+            assurance/CMakeLists.txt \
+            assurance/Makefile \
+            assurance/tests/test_em_pic3d_plasma_modes.c \
+            claims/em-pic3d-plasma-modes-claims.json \
+            claims/em-pic3d-reference-claims.json \
+            docs/EM_PIC3D_PLASMA_MODE_VALIDATION.md \
+            .github/workflows/publish-3d3v-plasma-mode.yml
+          git diff --cached --check
+          git commit -m 'test: validate homogeneous 3D3V plasma oscillations'
+          git push origin HEAD:agent/bootstrap-space-simulation-engine
