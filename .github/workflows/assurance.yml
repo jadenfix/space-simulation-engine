@@ -113,8 +113,8 @@ jobs:
   transactional-3d3v:
     if: >-
       github.actor != 'github-actions[bot]' &&
-      ((github.event_name == 'push' && github.ref == 'refs/heads/agent/bootstrap-space-simulation-engine') ||
-       (github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'agent/bootstrap-space-simulation-engine'))
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.ref == 'agent/bootstrap-space-simulation-engine'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -178,7 +178,6 @@ jobs:
           diff -u /tmp/transaction-first.sha256 /tmp/transaction-second.sha256
 
       - name: Publish verified transactional semantics
-        if: github.event_name == 'push'
         run: |
           set -euo pipefail
           rm -f .github/scripts/apply_em_pic3d_transaction.py
