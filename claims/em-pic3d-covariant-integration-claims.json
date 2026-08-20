@@ -1,0 +1,47 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-em-pic3d-covariant-integration",
+  "version": "0.1.0",
+  "claims": [
+    {
+      "id": "SW-EM3DCOV-0001",
+      "type": "finite_check",
+      "statement": "For each accepted bounded 3D3V timestep, independently reconstructed incremental field and matter four-momentum changes reproduce the solver's separately accumulated energy and three-momentum residuals without using constant particle rest energy as an acceptance scale.",
+      "evidence": [
+        "assurance/tests/test_em_pic3d_covariant_integration.c",
+        "assurance/src/four_momentum_delta.c",
+        "assurance/output/em_pic3d_covariant_receipt.json"
+      ],
+      "nonclaims": [
+        "A closed same-step ledger does not establish a useful plasma-wing force or complete Vlasov-Maxwell fidelity."
+      ]
+    },
+    {
+      "id": "SW-EM3DCOV-0002",
+      "type": "finite_check",
+      "statement": "The actual numerical four-residual is transformed into an oblique inertial frame and compared with a residual independently reconstructed from transformed ledger terms; cellwise electromagnetic stress-energy is separately integrated and checked against the 3D Yee field momentum, trace identity, and dominant-energy bound.",
+      "evidence": [
+        "assurance/tests/test_em_pic3d_covariant_integration.c",
+        "assurance/src/covariant_em.c",
+        "assurance/src/em_pic3d_diagnostics.inc"
+      ],
+      "nonclaims": [
+        "The bounded covariance and stress-energy checks do not prove Lorentz invariance of the full grid algorithm.",
+        "Periodic stress-energy consistency is not an open-boundary force measurement."
+      ]
+    },
+    {
+      "id": "SW-EM3DCOV-0003",
+      "type": "open_problem",
+      "statement": "Extend the covariant ledger to a three-dimensional open kinetic control volume with electromagnetic and particle boundary transport and material force and torque.",
+      "required_evidence": [
+        "area-integrated Poynting energy transport",
+        "area-integrated Maxwell-stress impulse",
+        "particle inward and outward four-momentum",
+        "surface mechanical impulse and torque",
+        "external circuit, radiation, thermal, and material source terms",
+        "refinement and independent implementation agreement"
+      ]
+    }
+  ]
+}

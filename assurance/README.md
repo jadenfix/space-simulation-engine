@@ -41,6 +41,29 @@ The field-and-particle ledger is documented in
 Its manufactured tests deliberately corrupt charge, magnetic flux, field
 energy, and field momentum to verify that each gate rejects the fault.
 
+### Electromagnetic PIC references
+
+The assurance kernel contains bounded periodic 1D3V and 3D3V electromagnetic
+particle-field references. The 3D3V layer includes:
+
+- a three-dimensional Yee field topology and discrete div-curl checks;
+- a relativistic Higuera-Cary pusher with independent RK4 comparison;
+- trilinear CIC charge deposition and periodic spectral Gauss initialization;
+- exact unwrapped multi-wrap particle transport;
+- a path-integrated current for particle-work accounting;
+- a six-permutation coordinate-split face current that closes finite-volume
+  continuity and preserves the complete periodic harmonic mode;
+- an independent direct-DFT minimum-norm continuity oracle;
+- separate particle-current and field-current work ledgers;
+- grid/timestep refinement, cyclic-axis covariance, reversal, corruption, CFL,
+  Gauss, magnetic-divergence, energy, momentum, and deterministic replay gates;
+- same-step total and incremental covariant four-momentum integration.
+
+The 3D reference is documented in
+[`docs/EM_PIC3D_REFERENCE.md`](../docs/EM_PIC3D_REFERENCE.md). It remains a
+periodic first-order reference, not an open-boundary spacecraft interaction
+solver or a chamber-calibrated force model.
+
 ### Cross-environment validity
 
 The plasma similarity contract compares twelve dimensionless or scale-sensitive

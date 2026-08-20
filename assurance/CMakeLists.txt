@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(spacewind_assurance VERSION 0.8.0 LANGUAGES C)
+project(spacewind_assurance VERSION 0.9.0 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -20,7 +20,9 @@ add_library(spacewind_assurance STATIC
     src/spectral_poisson.c
     src/maxwell1d_reference.c
     src/covariant_em.c
+    src/four_momentum_delta.c
     src/em_pic1d.c
+    src/em_pic3d.c
     src/open_boundary.c
 )
 target_include_directories(spacewind_assurance PUBLIC
@@ -79,6 +81,8 @@ add_assurance_test(spacewind_assurance_covariant_em tests/test_covariant_em.c)
 add_assurance_test(spacewind_assurance_maxwell_covariant_integration tests/test_maxwell_covariant_integration.c)
 add_assurance_test(spacewind_assurance_em_pic1d tests/test_em_pic1d.c)
 add_assurance_test(spacewind_assurance_em_pic1d_covariant_integration tests/test_em_pic1d_covariant_integration.c)
+add_assurance_test(spacewind_assurance_em_pic3d tests/test_em_pic3d.c)
+add_assurance_test(spacewind_assurance_em_pic3d_covariant_integration tests/test_em_pic3d_covariant_integration.c)
 add_assurance_test(spacewind_assurance_open_boundary tests/test_open_boundary.c)
 
 set(SPACEWIND_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/..)
