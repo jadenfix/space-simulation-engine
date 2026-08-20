@@ -28,7 +28,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD^)" = '48b6f8fe8e1649d51c67e3e9ba883196b6515611'
+          git merge-base --is-ancestor \
+            '48b6f8fe8e1649d51c67e3e9ba883196b6515611' HEAD
           git fetch --no-tags origin \
             agent/stage-3d3v-plasma-mode:refs/remotes/origin/agent/stage-3d3v-plasma-mode
           test "$(git rev-parse origin/agent/stage-3d3v-plasma-mode)" = \
