@@ -34,7 +34,7 @@ jobs:
           set -euo pipefail
           cat .github/em-pic3d-payload/part-* | tr -d '[:space:]' > /tmp/em-pic3d-payload.b64
           sha256sum /tmp/em-pic3d-payload.b64
-          echo 'b23ef0aeb1ab89a9148c25f8f6df7354363bda5248fba6542b48021042adf08b  /tmp/em-pic3d-payload.b64' | sha256sum -c -
+          echo '333c209f4d62580eb64d467f861a1fd097ac44bceec57b82884da05fe924e3a5  /tmp/em-pic3d-payload.b64' | sha256sum -c -
           base64 -d /tmp/em-pic3d-payload.b64 > /tmp/em-pic3d-payload.tar.gz
           sha256sum /tmp/em-pic3d-payload.tar.gz
           echo '3d128d8601d3bee5f7129012615c3c19a231e00a4dec5fc8390838431a6ae455  /tmp/em-pic3d-payload.tar.gz' | sha256sum -c -
