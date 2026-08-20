@@ -4,17 +4,23 @@ on:
   push:
     branches:
       - agent/bootstrap-space-simulation-engine
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
 
 concurrency:
-  group: install-em-pic3d-reference
+  group: install-em-pic3d-reference-${{ github.event_name }}
   cancel-in-progress: false
 
 jobs:
   install:
-    if: github.actor != 'github-actions[bot]'
+    if: >-
+      github.actor != 'github-actions[bot]' &&
+      (github.event_name == 'push' ||
+       github.event.pull_request.head.ref == 'agent/bootstrap-space-simulation-engine')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -123,6 +129,7 @@ jobs:
           diff -u /tmp/em-pic3d-first.sha256 /tmp/em-pic3d-second.sha256
 
       - name: Publish verified 3D3V reference
+        if: github.event_name == 'push'
         shell: bash
         run: |
           set -euo pipefail
