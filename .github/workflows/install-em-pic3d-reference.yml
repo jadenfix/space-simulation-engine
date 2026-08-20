@@ -173,6 +173,35 @@ jobs:
                   if source is None:
                       raise SystemExit(f'cannot read archive file: {normalized}')
                   payload = source.read()
+                  if normalized == 'assurance/README.md':
+                      corrupt_sha256 = (
+                          '13c905545f71ac292ba09b8a0346da157f8228ae44c157520f2baefc17e124f4'
+                      )
+                      intended_sha256 = (
+                          '0727d6ed09b63eaf22ecbbff1948a7105a668ec584649eadf4ef1bcbd549c348'
+                      )
+                      observed_sha256 = hashlib.sha256(payload).hexdigest()
+                      if observed_sha256 == corrupt_sha256:
+                          corrupt = b'make -C assurance n asantest'
+                          intended = b'make -C assurance clean test'
+                          if payload.count(corrupt) != 1:
+                              raise SystemExit(
+                                  'known README corruption does not occur exactly once'
+                              )
+                          payload = payload.replace(corrupt, intended, 1)
+                          repaired_sha256 = hashlib.sha256(payload).hexdigest()
+                          if repaired_sha256 != intended_sha256:
+                              raise SystemExit(
+                                  'README repair does not reproduce the independent manifest hash'
+                              )
+                          print(
+                              'repaired the one localized README transport corruption; '
+                              f'sha256={repaired_sha256}'
+                          )
+                      elif observed_sha256 != intended_sha256:
+                          raise SystemExit(
+                              'README differs from both the known corrupt and intended hashes'
+                          )
                   target = output_root.joinpath(*path.parts)
                   target.parent.mkdir(parents=True, exist_ok=True)
                   target.write_bytes(payload)
@@ -299,6 +328,7 @@ jobs:
             claims/four-momentum-delta-claims.json
           git rm -r .github/em-pic3d-payload
           git rm .github/workflows/install-em-pic3d-reference.yml
+          git rm .github/workflows/inspect-em-pic3d-payload.yml
           git diff --cached --check
           git commit -m 'feat: add audited periodic 3D3V electromagnetic PIC reference'
           git pull --rebase origin agent/bootstrap-space-simulation-engine
