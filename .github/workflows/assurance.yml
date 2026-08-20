@@ -111,7 +111,7 @@ jobs:
 
 # BEGIN NEUTRAL_3D3V_SCALE_REPAIR
   neutral-scale-repair:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/agent/bootstrap-space-simulation-engine' && github.actor != 'github-actions[bot]' }}
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'agent/bootstrap-space-simulation-engine' && github.actor != 'github-actions[bot]' }}
     permissions:
       contents: write
     runs-on: ubuntu-latest
