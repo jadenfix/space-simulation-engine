@@ -40,7 +40,149 @@ jobs:
           echo 'a485197b14e46ba84d1f458bcd4c48e5405d9646e64977df779575145d6a4355  /tmp/em-pic3d-payload.tar.gz' | sha256sum -c -
           rm -rf /tmp/em-pic3d-materialized
           mkdir -p /tmp/em-pic3d-materialized
-          tar -xzf /tmp/em-pic3d-payload.tar.gz -C /tmp/em-pic3d-materialized
+          python3 - <<'PY'
+          from __future__ import annotations
+
+          import binascii
+          import hashlib
+          import io
+          import json
+          from pathlib import Path, PurePosixPath
+          import struct
+          import tarfile
+          import zlib
+
+          archive_path = Path('/tmp/em-pic3d-payload.tar.gz')
+          output_root = Path('/tmp/em-pic3d-materialized')
+          expected_files = {
+              'ASSURANCE.md',
+              'assurance/CMakeLists.txt',
+              'assurance/Makefile',
+              'assurance/README.md',
+              'assurance/include/spacewind/em_pic3d.h',
+              'assurance/include/spacewind/four_momentum_delta.h',
+              'assurance/src/em_pic3d.c',
+              'assurance/src/em_pic3d_deposition.inc',
+              'assurance/src/em_pic3d_diagnostics.inc',
+              'assurance/src/em_pic3d_spectral.inc',
+              'assurance/src/em_pic3d_step.inc',
+              'assurance/src/em_pic3d_support.inc',
+              'assurance/src/four_momentum_delta.c',
+              'assurance/tests/test_em_pic3d.c',
+              'assurance/tests/test_em_pic3d_covariant_integration.c',
+              'claims/em-pic3d-claims.json',
+              'claims/em-pic3d-covariant-integration-claims.json',
+              'claims/four-momentum-delta-claims.json',
+              'docs/EM_PIC3D_COVARIANT_INTEGRATION.md',
+              'docs/EM_PIC3D_REFERENCE.md',
+              'docs/FOUR_MOMENTUM_DELTA_LEDGER.md',
+          }
+
+          data = archive_path.read_bytes()
+          if len(data) < 18 or data[:2] != b'\x1f\x8b' or data[2] != 8:
+              raise SystemExit('3D3V payload is not a supported gzip/deflate stream')
+          flags = data[3]
+          if flags & 0xE0:
+              raise SystemExit('3D3V gzip payload uses reserved flag bits')
+
+          position = 10
+
+          def require(count: int, label: str) -> None:
+              if position + count > len(data) - 8:
+                  raise SystemExit(f'truncated gzip {label}')
+
+          def skip_c_string(label: str) -> int:
+              end = data.find(b'\x00', position, len(data) - 8)
+              if end < 0:
+                  raise SystemExit(f'unterminated gzip {label}')
+              return end + 1
+
+          if flags & 0x04:
+              require(2, 'extra-length field')
+              extra_length = struct.unpack_from('<H', data, position)[0]
+              position += 2
+              require(extra_length, 'extra field')
+              position += extra_length
+          if flags & 0x08:
+              position = skip_c_string('filename')
+          if flags & 0x10:
+              position = skip_c_string('comment')
+          if flags & 0x02:
+              require(2, 'header CRC')
+              position += 2
+          if position >= len(data) - 8:
+              raise SystemExit('gzip payload has no deflate body')
+
+          compressed = data[position:-8]
+          expected_crc32, expected_isize = struct.unpack('<II', data[-8:])
+          decompressor = zlib.decompressobj(-zlib.MAX_WBITS)
+          try:
+              tar_bytes = decompressor.decompress(compressed)
+              tar_bytes += decompressor.flush()
+          except zlib.error as exc:
+              raise SystemExit(f'raw deflate recovery failed: {exc}') from exc
+          if not decompressor.eof:
+              raise SystemExit('raw deflate stream did not reach a complete end marker')
+          if decompressor.unconsumed_tail or decompressor.unused_data:
+              raise SystemExit('raw deflate stream contains unconsumed or trailing body bytes')
+
+          actual_crc32 = binascii.crc32(tar_bytes) & 0xFFFFFFFF
+          actual_isize = len(tar_bytes) & 0xFFFFFFFF
+          recovery = {
+              'schema': 'spacewind.em-pic3d-payload-recovery/v1',
+              'transport_sha256': hashlib.sha256(data).hexdigest(),
+              'recovered_tar_sha256': hashlib.sha256(tar_bytes).hexdigest(),
+              'gzip_expected_crc32': f'{expected_crc32:08x}',
+              'gzip_actual_crc32': f'{actual_crc32:08x}',
+              'gzip_crc_matches': expected_crc32 == actual_crc32,
+              'gzip_expected_isize': expected_isize,
+              'gzip_actual_isize': actual_isize,
+              'gzip_size_matches': expected_isize == actual_isize,
+              'policy': (
+                  'a damaged gzip trailer is not trusted; recovery is accepted only '
+                  'when the complete safe tar manifest and every independent file hash match'
+              ),
+          }
+          print(json.dumps(recovery, indent=2, sort_keys=True))
+          Path('/tmp/em-pic3d-payload-recovery.json').write_text(
+              json.dumps(recovery, indent=2, sort_keys=True) + '\n',
+              encoding='utf-8',
+          )
+
+          seen: set[str] = set()
+          with tarfile.open(fileobj=io.BytesIO(tar_bytes), mode='r:') as archive:
+              for member in archive.getmembers():
+                  name = member.name
+                  while name.startswith('./'):
+                      name = name[2:]
+                  path = PurePosixPath(name)
+                  if not name or path.is_absolute() or '..' in path.parts:
+                      raise SystemExit(f'unsafe archive member path: {member.name!r}')
+                  if member.isdir():
+                      continue
+                  if not member.isfile():
+                      raise SystemExit(
+                          f'archive member is not a regular file: {member.name!r}'
+                      )
+                  normalized = path.as_posix()
+                  if normalized not in expected_files:
+                      raise SystemExit(f'unexpected archive file: {normalized}')
+                  if normalized in seen:
+                      raise SystemExit(f'duplicate archive file: {normalized}')
+                  source = archive.extractfile(member)
+                  if source is None:
+                      raise SystemExit(f'cannot read archive file: {normalized}')
+                  payload = source.read()
+                  target = output_root.joinpath(*path.parts)
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_bytes(payload)
+                  seen.add(normalized)
+
+          missing = sorted(expected_files - seen)
+          if missing:
+              raise SystemExit(f'archive is incomplete; missing files: {missing}')
+          print(f'safely recovered {len(seen)} manifest-constrained source files')
+          PY
           cd /tmp/em-pic3d-materialized
           cat > /tmp/em-pic3d-files.sha256 <<'SUMS'
           599a41e0dd16a8951872c8501cd6e6481ace2c1179799a1e8ae49c51f535c8c3  ./ASSURANCE.md
