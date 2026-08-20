@@ -900,18 +900,22 @@ int swa_em_pic3d_step(
     if (!out->finite) {
         goto cleanup;
     }
-    if (state->particle_count > 0U) {
-        memcpy(
-            state->particles, particle_final,
-            state->particle_count * sizeof(*particle_final)
-        );
+    out->state_committed = 0;
+    if (out->passes) {
+        if (state->particle_count > 0U) {
+            memcpy(
+                state->particles, particle_final,
+                state->particle_count * sizeof(*particle_final)
+            );
+        }
+        memcpy(state->ex_V_m, ex_final, count * sizeof(double));
+        memcpy(state->ey_V_m, ey_final, count * sizeof(double));
+        memcpy(state->ez_V_m, ez_final, count * sizeof(double));
+        memcpy(state->bx_T, bx_final, count * sizeof(double));
+        memcpy(state->by_T, by_final, count * sizeof(double));
+        memcpy(state->bz_T, bz_final, count * sizeof(double));
+        out->state_committed = 1;
     }
-    memcpy(state->ex_V_m, ex_final, count * sizeof(double));
-    memcpy(state->ey_V_m, ey_final, count * sizeof(double));
-    memcpy(state->ez_V_m, ez_final, count * sizeof(double));
-    memcpy(state->bx_T, bx_final, count * sizeof(double));
-    memcpy(state->by_T, by_final, count * sizeof(double));
-    memcpy(state->bz_T, bz_final, count * sizeof(double));
     ok = 1;
 
 cleanup:
@@ -960,6 +964,7 @@ int swa_em_pic3d_write_receipt(
         "  \"maximum_speed_fraction_c\": %.17g,\n"
         "  \"local_current_passes\": %s,\n"
         "  \"spectral_oracle_passes\": %s,\n"
+        "  \"state_committed\": %s,\n"
         "  \"passes\": %s,\n"
         "  \"current_method\": \"six-permutation symmetric coordinate-split charge-conserving face current with complete unwrapped harmonic transport\",\n"
         "  \"oracle_method\": \"independent direct-DFT minimum-norm periodic continuity projection\",\n"
@@ -991,6 +996,7 @@ int swa_em_pic3d_write_receipt(
         result->maximum_speed_fraction_c,
         result->local_current_passes ? "true" : "false",
         result->spectral_oracle_passes ? "true" : "false",
+        result->state_committed ? "true" : "false",
         result->passes ? "true" : "false"
     ) > 0;
 }

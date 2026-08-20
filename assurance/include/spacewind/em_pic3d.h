@@ -161,6 +161,7 @@ typedef struct {
     int particle_work_passes;
     int field_work_passes;
     int momentum_passes;
+    int state_committed;
     int passes;
 } swa_em_pic3d_result;
 

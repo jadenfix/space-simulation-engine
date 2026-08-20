@@ -214,6 +214,19 @@ p_field = integral epsilon0 E cross B dV.
 
 The periodic step reports the change in total particle-plus-field momentum. A separate covariant integration test independently reconstructs cellwise electromagnetic stress-energy and requires its integrated spatial momentum to agree with the Yee diagnostic.
 
+## Transactional step acceptance
+
+The timestep is evaluated into candidate particle and field buffers. The public
+state is committed only when every declared acceptance gate passes. A finite
+rejected step still returns its complete diagnostic receipt, but leaves all
+particle and field bytes unchanged. Internal errors likewise leave the state
+unchanged. The receipt exposes `state_committed` so callers cannot confuse a
+computed candidate with an accepted physical trajectory point.
+
+This prevents a failed CFL, continuity, Gauss, magnetic-divergence, current,
+nonlinear, energy, momentum, or subluminal gate from contaminating subsequent
+steps.
+
 ## Fail-closed gates
 
 A step can be finite and still fail. Promotion requires all declared gates:

@@ -1,7 +1,7 @@
 {
   "schema": "spacewind.claims.v1",
   "artifact": "spacewind-em-pic3d-assurance",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "claims": [
     {
       "id": "SW-EM3D-0001",
@@ -49,7 +49,7 @@
     {
       "id": "SW-EM3D-0004",
       "type": "finite_check",
-      "statement": "Bounded deterministic tests cover discrete div-curl identities, three-axis plane-wave propagation and refinement, vacuum reversal, relativistic pusher invariants and RK4 comparison, Gauss initialization, multi-wrap current transport, local-current reversal and translation symmetry, cyclic-axis covariance, coupled neutral relativistic plasma evolution, fail-closed adversarial corruption, and deterministic receipt replay.",
+      "statement": "Bounded deterministic tests cover discrete div-curl identities, three-axis plane-wave propagation and refinement, vacuum reversal, relativistic pusher invariants and RK4 comparison, Gauss initialization, multi-wrap current transport, local-current reversal and translation symmetry, cyclic-axis covariance, coupled neutral relativistic plasma evolution, fail-closed adversarial corruption, and deterministic receipt replay. Rejected finite timesteps are additionally required to preserve the complete public particle and field state bit-for-bit; only a fully passing receipt may commit the candidate state.",
       "evidence": [
         "assurance/tests/test_em_pic3d.c",
         ".github/workflows/assurance.yml"
