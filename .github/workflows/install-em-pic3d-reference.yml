@@ -37,7 +37,7 @@ jobs:
           echo '333c209f4d62580eb64d467f861a1fd097ac44bceec57b82884da05fe924e3a5  /tmp/em-pic3d-payload.b64' | sha256sum -c -
           base64 -d /tmp/em-pic3d-payload.b64 > /tmp/em-pic3d-payload.tar.gz
           sha256sum /tmp/em-pic3d-payload.tar.gz
-          echo '3d128d8601d3bee5f7129012615c3c19a231e00a4dec5fc8390838431a6ae455  /tmp/em-pic3d-payload.tar.gz' | sha256sum -c -
+          echo 'a485197b14e46ba84d1f458bcd4c48e5405d9646e64977df779575145d6a4355  /tmp/em-pic3d-payload.tar.gz' | sha256sum -c -
           rm -rf /tmp/em-pic3d-materialized
           mkdir -p /tmp/em-pic3d-materialized
           tar -xzf /tmp/em-pic3d-payload.tar.gz -C /tmp/em-pic3d-materialized
