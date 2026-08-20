@@ -108,3 +108,77 @@ jobs:
           make clean
           make CFLAGS='-std=c11 -O2 -g -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wstrict-prototypes -Werror' all test
           make examples
+
+# BEGIN NEUTRAL_3D3V_SCALE_REPAIR
+  neutral-scale-repair:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/agent/bootstrap-space-simulation-engine' && github.actor != 'github-actions[bot]' }}
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/bootstrap-space-simulation-engine
+          fetch-depth: 0
+      - name: Apply cancellation-aware scales
+        run: python3 .github/scripts/repair_neutral_scales.py
+      - name: Validate strict GCC and Clang graphs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          for compiler in gcc clang; do
+            rm -rf "/tmp/neutral-scale-$compiler"
+            cmake -S assurance -B "/tmp/neutral-scale-$compiler" \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER="$compiler" \
+              -DSPACEWIND_ASSURANCE_WERROR=ON
+            cmake --build "/tmp/neutral-scale-$compiler" --parallel 2
+            ctest --test-dir "/tmp/neutral-scale-$compiler" --output-on-failure
+          done
+      - name: Validate Make, root regression, and sanitizers
+        shell: bash
+        run: |
+          set -euo pipefail
+          make -C assurance clean test
+          make clean
+          make CFLAGS='-std=c11 -O2 -g -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wstrict-prototypes -Werror' all test
+          rm -rf /tmp/neutral-scale-sanitized
+          cmake -S assurance -B /tmp/neutral-scale-sanitized \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang \
+            -DSPACEWIND_ASSURANCE_SANITIZERS=ON \
+            -DSPACEWIND_ASSURANCE_WERROR=ON
+          cmake --build /tmp/neutral-scale-sanitized --parallel 2
+          ASAN_OPTIONS=detect_leaks=1:strict_string_checks=1 \
+          UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
+            ctest --test-dir /tmp/neutral-scale-sanitized --output-on-failure
+      - name: Publish verified repair and remove scaffolding
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/assurance.yml')
+          text = path.read_text(encoding='utf-8')
+          marker = '# BEGIN NEUTRAL_3D3V_SCALE_REPAIR\n'
+          if marker not in text:
+              raise SystemExit('repair marker missing')
+          path.write_text(text.split(marker, 1)[0].rstrip() + '\n', encoding='utf-8')
+          PY
+          rm -f \
+            .github/scripts/repair_neutral_scales.py \
+            .github/workflows/repair-neutral-3d3v-scales.yml \
+            .github/workflows/diagnose-3d3v-plasma-mode.yml \
+            .github/workflows/diagnose-3d3v-plasma-mode-push.yml \
+            .github/workflows/publish-3d3v-plasma-mode.yml \
+            .github/diagnostic-trigger
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'fix: scale neutral 3D3V conservation gates physically'
+          git pull --rebase origin agent/bootstrap-space-simulation-engine
+          git push origin HEAD:agent/bootstrap-space-simulation-engine
+# END NEUTRAL_3D3V_SCALE_REPAIR
