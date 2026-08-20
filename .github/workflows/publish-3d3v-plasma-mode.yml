@@ -32,9 +32,21 @@ jobs:
           git fetch --no-tags origin \
             agent/stage-3d3v-plasma-mode:refs/remotes/origin/agent/stage-3d3v-plasma-mode
           test "$(git rev-parse origin/agent/stage-3d3v-plasma-mode)" = \
-            'bcf73536237d959951cf5343d526ef6a95ad510b'
+            'd7854806f4d524bc9e65faf16fc400519377fe8c'
+          test "$(git rev-parse origin/agent/stage-3d3v-plasma-mode:.github/plasma-mode-payload-v2/part-00)" = \
+            'e168b1f6d6ad5a9b480d1671ff740f2af485b854'
+          test "$(git rev-parse origin/agent/stage-3d3v-plasma-mode:.github/plasma-mode-payload-v2/part-01)" = \
+            '73cb98d76582210c4d93056af63fce254b6410be'
+          test "$(git rev-parse origin/agent/stage-3d3v-plasma-mode:.github/plasma-mode-payload-v2/part-02a)" = \
+            '292be1443ca318a610d6d4450bc9c9eb47bf2bcc'
+          test "$(git rev-parse origin/agent/stage-3d3v-plasma-mode:.github/plasma-mode-payload-v2/part-02b)" = \
+            '6cba43860620bdfcd428cb2f937c7911566f8c0f'
+          test "$(git rev-parse origin/agent/stage-3d3v-plasma-mode:.github/plasma-mode-payload-v2/part-03a)" = \
+            'a3404a6e1939f25f1b9e589af8ce1cde5b55ed1a'
+          test "$(git rev-parse origin/agent/stage-3d3v-plasma-mode:.github/plasma-mode-payload-v2/part-03b)" = \
+            '866150b46b97238977647386ff2af2f1d720f746'
           : > /tmp/plasma_bundle.tar.gz.b64
-          for part in 00 01 02a 02b 03; do
+          for part in 00 01 02a 02b 03a 03b; do
             git show \
               "origin/agent/stage-3d3v-plasma-mode:.github/plasma-mode-payload-v2/part-$part" \
               >> /tmp/plasma_bundle.tar.gz.b64
@@ -51,7 +63,6 @@ jobs:
           if bad:
               raise SystemExit(f'non-base64 bytes in pinned payload: {bad[:32]}')
           compact = b''.join(raw.split())
-          compact += b'=' * ((-len(compact)) % 4)
           decoded = base64.b64decode(compact, validate=True)
           Path('/tmp/plasma_bundle.tar.gz').write_bytes(decoded)
           print({
