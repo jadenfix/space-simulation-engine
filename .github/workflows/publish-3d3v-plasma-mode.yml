@@ -32,16 +32,16 @@ jobs:
           git fetch --no-tags origin \
             agent/stage-3d3v-plasma-mode:refs/remotes/origin/agent/stage-3d3v-plasma-mode
           test "$(git rev-parse origin/agent/stage-3d3v-plasma-mode)" = \
-            '3e24802e173b504bf6e0540e0ee944647b99f43b'
+            '4e779a28e5431ba964febf485d056b335d02ed5f'
           : > /tmp/plasma_bundle.tar.gz.b64
           for part in 00 01 02 03; do
             git show \
-              "origin/agent/stage-3d3v-plasma-mode:.github/plasma-mode-payload/part-$part" \
+              "origin/agent/stage-3d3v-plasma-mode:.github/plasma-mode-payload-v2/part-$part" \
               >> /tmp/plasma_bundle.tar.gz.b64
           done
-          echo '442b1b0df25627bf0940699304350c7c8ba3bd1eb9a9934b1138e3da2d537fcf  /tmp/plasma_bundle.tar.gz.b64' | sha256sum -c -
+          echo '4a1bbd6b2bf071980fd5c3fb245b9574bb0947f8586a0bb9cd46fe376c5dbc62  /tmp/plasma_bundle.tar.gz.b64' | sha256sum -c -
           base64 -d /tmp/plasma_bundle.tar.gz.b64 > /tmp/plasma_bundle.tar.gz
-          echo '04769fb052c4428c3c0585990e084fd768fa8f384b52466c870ddd8ddaef1db0  /tmp/plasma_bundle.tar.gz' | sha256sum -c -
+          echo '41e48e6caeacb8204933ac21dfa4e9bc0d53abea6125d7ff36f2a19eda854ba6  /tmp/plasma_bundle.tar.gz' | sha256sum -c -
           rm -rf /tmp/plasma-payload
           mkdir -p /tmp/plasma-payload
           tar -xzf /tmp/plasma_bundle.tar.gz -C /tmp/plasma-payload
