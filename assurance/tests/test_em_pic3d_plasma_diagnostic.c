@@ -166,7 +166,7 @@ int main(void) {
     const double inverse_spacing2 =
         1.0 / (dx * dx) + 1.0 / (dy * dy) + 1.0 / (dz * dz);
     const double dt = 0.12 / (SWA_C * sqrt(inverse_spacing2));
-    const double target_omega = 2.0 * SWA_PI / (64.0 * dt);
+    const double target_omega = 2.0 * SWA_PI / (1024.0 * dt);
     const double density = target_omega * target_omega * SWA_EPS0 /
         (SWA_QE * SWA_QE * (1.0 / SWA_ME + 1.0 / SWA_MP));
     const double absolute_charge =

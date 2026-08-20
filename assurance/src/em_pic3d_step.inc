@@ -730,27 +730,44 @@ int swa_em_pic3d_step(
             out->initial_field_momentum_Ns
         )
     );
-    momentum_scale = pic3d_max4(
-        swa_vnorm(swa_vadd(
-            out->initial_particle_momentum_Ns,
-            out->initial_field_momentum_Ns
-        )),
-        swa_vnorm(swa_vadd(
-            out->final_particle_momentum_Ns,
-            out->final_field_momentum_Ns
-        )),
-        swa_vnorm(swa_vsub(
-            out->final_particle_momentum_Ns,
-            out->initial_particle_momentum_Ns
-        )),
-        pic3d_max2(
+    {
+        const double particle_momentum_scale = pic3d_max2(
+            pic3d_particle_momentum_scale_Ns(
+                particle_initial, state->particle_count
+            ),
+            pic3d_particle_momentum_scale_Ns(
+                particle_final, state->particle_count
+            )
+        );
+        const double field_momentum_scale = pic3d_max2(
+            out->initial_field_energy_J / SWA_C,
+            out->final_field_energy_J / SWA_C
+        );
+        const double exchange_momentum_scale = pic3d_max4(
+            particle_momentum_scale,
+            field_momentum_scale,
+            swa_vnorm(swa_vsub(
+                out->final_particle_momentum_Ns,
+                out->initial_particle_momentum_Ns
+            )),
             swa_vnorm(swa_vsub(
                 out->final_field_momentum_Ns,
                 out->initial_field_momentum_Ns
+            ))
+        );
+        momentum_scale = pic3d_max4(
+            swa_vnorm(swa_vadd(
+                out->initial_particle_momentum_Ns,
+                out->initial_field_momentum_Ns
             )),
+            swa_vnorm(swa_vadd(
+                out->final_particle_momentum_Ns,
+                out->final_field_momentum_Ns
+            )),
+            exchange_momentum_scale,
             DBL_MIN
-        )
-    );
+        );
+    }
     out->total_momentum_relative =
         swa_vnorm(out->total_momentum_residual_Ns) / momentum_scale;
 
@@ -768,8 +785,13 @@ int swa_em_pic3d_step(
     charge_scale = pic3d_max4(
         fabs(out->initial_charge_C),
         fabs(out->final_charge_C),
-        charge_l1_initial,
-        pic3d_max2(charge_l1_final, DBL_MIN)
+        pic3d_absolute_particle_charge_C(
+            particle_initial, state->particle_count
+        ),
+        pic3d_max2(
+            pic3d_max2(charge_l1_initial, charge_l1_final),
+            DBL_MIN
+        )
     );
     out->charge_closure_passes =
         fabs(out->charge_change_C) <=

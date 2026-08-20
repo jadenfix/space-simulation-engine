@@ -16,11 +16,35 @@ static void pic3d_continuity_metrics(
     const double dz = pic3d_dz(state);
     swa_kahan squared = {0.0, 0.0};
     swa_kahan mean = {0.0, 0.0};
-    double scale = DBL_MIN;
+    const double inverse_length = sqrt(
+        1.0 / (dx * dx) +
+        1.0 / (dy * dy) +
+        1.0 / (dz * dz)
+    );
+    const double total_volume =
+        state->length_x_m * state->length_y_m * state->length_z_m;
+    const double absolute_charge_rate =
+        pic3d_absolute_particle_charge_C(
+            state->particles, state->particle_count
+        ) / (total_volume * state->dt_s);
+    double maximum_current = 0.0;
+    double scale;
+    size_t index;
     size_t i;
     size_t j;
     size_t k;
     *maximum = 0.0;
+    for (index = 0U; index < state->cell_count; ++index) {
+        maximum_current = pic3d_max4(
+            maximum_current,
+            fabs(jx[index]), fabs(jy[index]), fabs(jz[index])
+        );
+    }
+    scale = pic3d_max3(
+        absolute_charge_rate,
+        maximum_current * inverse_length,
+        DBL_MIN
+    );
     for (k = 0U; k < state->nz; ++k) {
         const size_t kp = (k + 1U) % state->nz;
         for (j = 0U; j < state->ny; ++j) {

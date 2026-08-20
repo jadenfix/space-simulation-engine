@@ -9,13 +9,14 @@ static double pic3d_particle_energy_J(
         const double speed2 = swa_vdot(
             particles[p].velocity_mps, particles[p].velocity_mps
         );
-        const double gamma = 1.0 / sqrt(
-            1.0 - speed2 / (SWA_C * SWA_C)
-        );
+        const double beta2 = speed2 / (SWA_C * SWA_C);
+        const double inverse_gamma = sqrt(1.0 - beta2);
+        const double gamma_minus_one =
+            beta2 / (inverse_gamma * (1.0 + inverse_gamma));
         swa_kahan_add(
             &energy,
             particles[p].macro_weight * particles[p].mass_kg *
-            SWA_C * SWA_C * (gamma - 1.0)
+            SWA_C * SWA_C * gamma_minus_one
         );
     }
     return energy.sum;

@@ -457,3 +457,48 @@ int swa_em_pic3d_higuera_cary_push(
            isfinite(final_speed2) && final_speed2 >= 0.0 &&
            final_speed2 < c2;
 }
+
+
+static double pic3d_absolute_particle_charge_C(
+    const swa_em_pic3d_particle *particles,
+    size_t particle_count
+) {
+    swa_kahan total = {0.0, 0.0};
+    size_t p;
+    if (particles == NULL && particle_count != 0U) {
+        return NAN;
+    }
+    for (p = 0U; p < particle_count; ++p) {
+        swa_kahan_add(
+            &total,
+            fabs(particles[p].charge_C * particles[p].macro_weight)
+        );
+    }
+    return total.sum;
+}
+
+static double pic3d_particle_momentum_scale_Ns(
+    const swa_em_pic3d_particle *particles,
+    size_t particle_count
+) {
+    swa_kahan total = {0.0, 0.0};
+    size_t p;
+    if (particles == NULL && particle_count != 0U) {
+        return NAN;
+    }
+    for (p = 0U; p < particle_count; ++p) {
+        const double speed2 = swa_vdot(
+            particles[p].velocity_mps,
+            particles[p].velocity_mps
+        );
+        const double gamma = 1.0 / sqrt(
+            1.0 - speed2 / (SWA_C * SWA_C)
+        );
+        swa_kahan_add(
+            &total,
+            particles[p].macro_weight * particles[p].mass_kg *
+            gamma * swa_vnorm(particles[p].velocity_mps)
+        );
+    }
+    return total.sum;
+}
