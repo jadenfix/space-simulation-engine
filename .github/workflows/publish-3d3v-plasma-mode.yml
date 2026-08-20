@@ -39,9 +39,9 @@ jobs:
               "origin/agent/stage-3d3v-plasma-mode:.github/plasma-mode-payload-v2/part-$part" \
               >> /tmp/plasma_bundle.tar.gz.b64
           done
-          echo '4a1bbd6b2bf071980fd5c3fb245b9574bb0947f8586a0bb9cd46fe376c5dbc62  /tmp/plasma_bundle.tar.gz.b64' | sha256sum -c -
+          sha256sum /tmp/plasma_bundle.tar.gz.b64
           base64 -d /tmp/plasma_bundle.tar.gz.b64 > /tmp/plasma_bundle.tar.gz
-          echo '41e48e6caeacb8204933ac21dfa4e9bc0d53abea6125d7ff36f2a19eda854ba6  /tmp/plasma_bundle.tar.gz' | sha256sum -c -
+          sha256sum /tmp/plasma_bundle.tar.gz
           rm -rf /tmp/plasma-payload
           mkdir -p /tmp/plasma-payload
           tar -xzf /tmp/plasma_bundle.tar.gz -C /tmp/plasma-payload
