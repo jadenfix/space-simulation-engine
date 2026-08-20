@@ -1,0 +1,36 @@
+{
+  "schema": "spacewind.claims/v1",
+  "component": "bounded-periodic-3d3v-electromagnetic-pic-reference",
+  "implemented": [
+    "three spatial coordinates and three particle velocity components",
+    "periodic odd collocated grid",
+    "symmetric centered-difference Maxwell update",
+    "relativistic Boris particle push",
+    "trilinear CIC charge and raw midpoint-current deposition",
+    "global Fourier longitudinal current projection",
+    "discrete local continuity and Gauss-law propagation",
+    "magnetic-divergence audit",
+    "particle-plus-field energy and momentum ledgers",
+    "vacuum-wave and coupled-plasma refinement checks"
+  ],
+  "explicit_limitations": [
+    "current projection is global and nonlocal",
+    "field topology is collocated rather than production staggered Yee",
+    "explicit coupling is not exactly energy or momentum conserving",
+    "standard relativistic Boris is not a complete strong-crossed-field reference",
+    "periodic boundaries only",
+    "no collisions, sheath, material, emission, arcing, thermal, or circuit physics"
+  ],
+  "promotion_blockers": [
+    "local charge-conserving 3D current deposition",
+    "independent 3D Maxwell spectral cross-check",
+    "Higuera-Cary and Vay pusher cross-method validation",
+    "plasma dispersion and instability benchmarks",
+    "open-boundary same-step four-momentum closure",
+    "force equivalence under multidimensional refinement",
+    "chamber-calibrated material and surface physics"
+  ],
+  "propulsion_claim_ready": false,
+  "flight_propulsion_ready": false,
+  "nonclaim": "finite software checks for a bounded periodic 3D3V reference do not establish a physical plasma-wing force, chamber equivalence, net dynamic-soaring energy, or propulsion"
+}
