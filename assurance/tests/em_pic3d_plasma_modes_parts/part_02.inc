@@ -50,6 +50,10 @@ static void update_step_maxima(
         step->initial_gauss_relative_max,
         step->final_gauss_relative_max
     );
+    result->maximum_spectral_oracle_relative = max2(
+        result->maximum_spectral_oracle_relative,
+        step->spectral_oracle_difference_relative
+    );
     result->maximum_momentum_relative = max2(
         result->maximum_momentum_relative,
         step->total_momentum_relative

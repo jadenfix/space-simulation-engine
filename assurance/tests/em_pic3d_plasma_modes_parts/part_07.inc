@@ -57,6 +57,34 @@
         );
 
         check_true(
+            coarse.maximum_continuity_relative < 2.0e-10 &&
+            medium.maximum_continuity_relative < 2.0e-10 &&
+            fine.maximum_continuity_relative < 2.0e-10 &&
+            high_density.maximum_continuity_relative < 2.0e-10 &&
+            heavy_electron.maximum_continuity_relative < 2.0e-10 &&
+            pair_plasma.maximum_continuity_relative < 2.0e-10,
+            "all plasma modes preserve local discrete continuity"
+        );
+        check_true(
+            coarse.maximum_gauss_relative < 2.0e-10 &&
+            medium.maximum_gauss_relative < 2.0e-10 &&
+            fine.maximum_gauss_relative < 2.0e-10 &&
+            high_density.maximum_gauss_relative < 2.0e-10 &&
+            heavy_electron.maximum_gauss_relative < 2.0e-10 &&
+            pair_plasma.maximum_gauss_relative < 2.0e-10,
+            "all plasma modes preserve conditioned Gauss closure"
+        );
+        check_true(
+            coarse.maximum_spectral_oracle_relative < 1.0e-8 &&
+            medium.maximum_spectral_oracle_relative < 1.0e-8 &&
+            fine.maximum_spectral_oracle_relative < 1.0e-8 &&
+            high_density.maximum_spectral_oracle_relative < 1.0e-8 &&
+            heavy_electron.maximum_spectral_oracle_relative < 1.0e-8 &&
+            pair_plasma.maximum_spectral_oracle_relative < 1.0e-8,
+            "all local currents remain within the spectral-oracle envelope"
+        );
+
+        check_true(
             coarse.peak_relative_change < 5.0e-4 &&
             medium.peak_relative_change < 5.0e-4 &&
             fine.peak_relative_change < 5.0e-4,

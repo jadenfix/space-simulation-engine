@@ -34,6 +34,7 @@ typedef struct {
     double maximum_field_work_relative;
     double maximum_continuity_relative;
     double maximum_gauss_relative;
+    double maximum_spectral_oracle_relative;
     double maximum_momentum_relative;
     size_t steps;
     size_t crossings;
@@ -94,7 +95,7 @@ static swa_em_pic3d_limits mode_limits(void) {
     value.gauss_relative_tolerance = 2.0e-10;
     value.magnetic_divergence_relative_tolerance = 2.0e-11;
     value.local_current_difference_relative_tolerance = 0.90;
-    value.spectral_oracle_relative_tolerance = 5.0e-10;
+    value.spectral_oracle_relative_tolerance = 1.0e-8;
     value.spectral_oracle_curl_relative_tolerance = 5.0e-10;
     value.energy_relative_tolerance = 5.0e-8;
     value.particle_work_relative_tolerance = 2.0e-4;

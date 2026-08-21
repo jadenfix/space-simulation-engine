@@ -25,6 +25,7 @@
         isfinite(result->maximum_field_work_relative) &&
         isfinite(result->maximum_continuity_relative) &&
         isfinite(result->maximum_gauss_relative) &&
+        isfinite(result->maximum_spectral_oracle_relative) &&
         isfinite(result->maximum_momentum_relative);
     result->passes =
         result->finite &&
@@ -60,6 +61,7 @@ static int write_case(
         "\"maximum_field_work_relative\": %.17g, "
         "\"maximum_continuity_relative\": %.17g, "
         "\"maximum_gauss_relative\": %.17g, "
+        "\"maximum_spectral_oracle_relative\": %.17g, "
         "\"maximum_momentum_relative\": %.17g, "
         "\"passes\": %s}%s\n",
         name,
@@ -79,6 +81,7 @@ static int write_case(
         value->maximum_field_work_relative,
         value->maximum_continuity_relative,
         value->maximum_gauss_relative,
+        value->maximum_spectral_oracle_relative,
         value->maximum_momentum_relative,
         value->passes ? "true" : "false",
         trailing_comma ? "," : ""
