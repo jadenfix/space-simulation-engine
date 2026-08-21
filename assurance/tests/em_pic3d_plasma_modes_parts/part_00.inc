@@ -15,6 +15,7 @@
 #define MODE_MAX_CROSSINGS 16U
 #define MODE_FIELD_AMPLITUDE_V_M 1000.0
 #define MODE_PERIODS 4.5
+#define MODE_MAX_NONLINEAR_ITERATIONS 32U
 /* Instantaneous current normalization is weakest at mode zero crossings. */
 #define MODE_SPECTRAL_ORACLE_ENVELOPE 1.0e-7
 
@@ -107,7 +108,7 @@ static swa_em_pic3d_limits mode_limits(void) {
     value.nonlinear_relative_tolerance = 2.0e-10;
     value.maximum_courant = 0.25;
     value.maximum_particle_cells_per_step = 0.20;
-    value.maximum_nonlinear_iterations = 24U;
+    value.maximum_nonlinear_iterations = MODE_MAX_NONLINEAR_ITERATIONS;
     return value;
 }
 
