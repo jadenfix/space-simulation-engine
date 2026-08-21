@@ -1,9 +1,9 @@
 name: repair-3d3v-nonlinear-conditioning
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/bootstrap-space-simulation-engine
+      - main
 
 permissions:
   contents: write
@@ -43,60 +43,45 @@ jobs:
           replace_once(
               'assurance/src/em_pic3d_step.inc',
               '''        out->nonlinear_relative_residual =
-              pic3d_vector_arrays_relative_difference(
-                  ex_mid, ey_mid, ez_mid,
-                  ex_mid_new, ey_mid_new, ez_mid_new, count
-              );''',
+            pic3d_vector_arrays_relative_difference(
+                ex_mid, ey_mid, ez_mid,
+                ex_mid_new, ey_mid_new, ez_mid_new, count
+            );''',
               '''        {
-              /* The midpoint electric field can pass through zero while the
-                 endpoint jump remains physically resolved. Normalize the
-                 fixed-point defect by the larger of the midpoint fields and
-                 half of that endpoint jump, avoiding a cancellation-driven
-                 relative residual without relaxing the requested tolerance. */
-              const double endpoint_change_scale =
-                  0.5 * pic3d_vector_arrays_difference_l2(
-                      state->ex_V_m, state->ey_V_m, state->ez_V_m,
-                      ex_final, ey_final, ez_final, count
-                  );
-              const double midpoint_difference =
-                  pic3d_vector_arrays_difference_l2(
-                      ex_mid, ey_mid, ez_mid,
-                      ex_mid_new, ey_mid_new, ez_mid_new, count
-                  );
-              const double midpoint_scale = pic3d_max4(
-                  pic3d_vector_arrays_l2(
-                      ex_mid, ey_mid, ez_mid, count
-                  ),
-                  pic3d_vector_arrays_l2(
-                      ex_mid_new, ey_mid_new, ez_mid_new, count
-                  ),
-                  endpoint_change_scale,
-                  DBL_MIN
-              );
-              out->nonlinear_relative_residual =
-                  midpoint_difference / midpoint_scale;
-          }'''
+            /* The midpoint electric field can pass through zero while the
+               endpoint jump remains physically resolved. Normalize the
+               fixed-point defect by the larger of the midpoint fields and
+               half of that endpoint jump, avoiding a cancellation-driven
+               relative residual without relaxing the requested tolerance. */
+            const double endpoint_change_scale =
+                0.5 * pic3d_vector_arrays_difference_l2(
+                    state->ex_V_m, state->ey_V_m, state->ez_V_m,
+                    ex_final, ey_final, ez_final, count
+                );
+            const double midpoint_difference =
+                pic3d_vector_arrays_difference_l2(
+                    ex_mid, ey_mid, ez_mid,
+                    ex_mid_new, ey_mid_new, ez_mid_new, count
+                );
+            const double midpoint_scale = pic3d_max4(
+                pic3d_vector_arrays_l2(
+                    ex_mid, ey_mid, ez_mid, count
+                ),
+                pic3d_vector_arrays_l2(
+                    ex_mid_new, ey_mid_new, ez_mid_new, count
+                ),
+                endpoint_change_scale,
+                DBL_MIN
+            );
+            out->nonlinear_relative_residual =
+                midpoint_difference / midpoint_scale;
+        }'''
           )
 
           replace_once(
               'assurance/tests/em_pic3d_plasma_modes_parts/part_00.inc',
               '#define MODE_MAX_NONLINEAR_ITERATIONS 32U',
               '#define MODE_MAX_NONLINEAR_ITERATIONS 24U'
-          )
-
-          replace_once(
-              'assurance/tests/em_pic3d_plasma_modes_parts/part_03.inc',
-              '''                "MODE step failure: step=%zu executed=%d finite=%d "
-                  "passes=%d committed=%d\\n",
-                  step, executed, step_result.finite,
-                  step_result.passes, step_result.state_committed
-              );''',
-              '''                "MODE step failure: step=%zu executed=%d finite=%d "
-                  "passes=%d committed=%d iterations=%zu\\n",
-                  step, executed, step_result.finite,
-                  step_result.passes, step_result.state_committed,
-                  step_result.nonlinear_iterations
-              );'''
           )
           PY
           git diff --check
@@ -179,7 +164,6 @@ jobs:
           git add -A \
             assurance/src/em_pic3d_step.inc \
             assurance/tests/em_pic3d_plasma_modes_parts/part_00.inc \
-            assurance/tests/em_pic3d_plasma_modes_parts/part_03.inc \
             .github/workflows/repair-3d3v-nonlinear-conditioning.yml
           git diff --cached --check
           git commit -m 'fix: condition 3D3V midpoint convergence at field zero crossings'
