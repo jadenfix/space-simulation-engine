@@ -50,6 +50,49 @@
                 step_result.passes,
                 step_result.state_committed
             );
+            fprintf(
+                stderr,
+                "MODE flags[cfl=%d pcfl=%d q=%d cont=%d g0=%d g1=%d "
+                "d0=%d d1=%d proj=%d local=%d spectral=%d mean=%d "
+                "nonlinear=%d sublum=%d energy=%d pwork=%d fwork=%d "
+                "mom=%d]\n",
+                step_result.courant_passes,
+                step_result.particle_courant_passes,
+                step_result.charge_closure_passes,
+                step_result.continuity_passes,
+                step_result.initial_gauss_passes,
+                step_result.final_gauss_passes,
+                step_result.initial_magnetic_divergence_passes,
+                step_result.final_magnetic_divergence_passes,
+                step_result.current_projection_passes,
+                step_result.local_current_passes,
+                step_result.spectral_oracle_passes,
+                step_result.mean_current_passes,
+                step_result.nonlinear_passes,
+                step_result.subluminal_passes,
+                step_result.energy_passes,
+                step_result.particle_work_passes,
+                step_result.field_work_passes,
+                step_result.momentum_passes
+            );
+            fprintf(
+                stderr,
+                "MODE metrics[cont=%.17g g0=%.17g g1=%.17g local=%.17g "
+                "spectral=%.17g nonlinear=%.17g energy=%.17g pwork=%.17g "
+                "fwork=%.17g mom=%.17g disp=%.17g speed=%.17g]\n",
+                step_result.continuity_relative_max,
+                step_result.initial_gauss_relative_max,
+                step_result.final_gauss_relative_max,
+                step_result.local_current_difference_relative,
+                step_result.spectral_oracle_difference_relative,
+                step_result.nonlinear_relative_residual,
+                step_result.total_energy_relative,
+                step_result.particle_work_relative,
+                step_result.field_work_relative,
+                step_result.total_momentum_relative,
+                step_result.maximum_particle_displacement_cells,
+                step_result.maximum_speed_fraction_c
+            );
             swa_em_pic3d_destroy(&state);
             return 0;
         }
