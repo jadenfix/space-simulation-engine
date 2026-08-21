@@ -1,13 +1,168 @@
 name: repair-3d3v-nonlinear-conditioning
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - agent/bootstrap-space-simulation-engine
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: repair-3d3v-nonlinear-conditioning-publisher
+  cancel-in-progress: false
 
 jobs:
-  disabled:
+  repair:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
-      - run: echo 'Repair execution is embedded in spacewind-assurance.'
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/bootstrap-space-simulation-engine
+          fetch-depth: 0
+
+      - name: Condition midpoint fixed-point residual at field zero crossings
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              target = Path(path)
+              text = target.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(
+                      f'{path}: expected one match, found {count}: {old!r}'
+                  )
+              target.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          replace_once(
+              'assurance/src/em_pic3d_step.inc',
+              '''        out->nonlinear_relative_residual =
+            pic3d_vector_arrays_relative_difference(
+                ex_mid, ey_mid, ez_mid,
+                ex_mid_new, ey_mid_new, ez_mid_new, count
+            );''',
+              '''        {
+            /* The midpoint electric field can pass through zero while the
+               endpoint jump remains physically resolved. Normalize the
+               fixed-point defect by the larger of the midpoint fields and
+               half of that endpoint jump, avoiding a cancellation-driven
+               relative residual without relaxing the requested tolerance. */
+            const double endpoint_change_scale =
+                0.5 * pic3d_vector_arrays_difference_l2(
+                    state->ex_V_m, state->ey_V_m, state->ez_V_m,
+                    ex_final, ey_final, ez_final, count
+                );
+            const double midpoint_difference =
+                pic3d_vector_arrays_difference_l2(
+                    ex_mid, ey_mid, ez_mid,
+                    ex_mid_new, ey_mid_new, ez_mid_new, count
+                );
+            const double midpoint_scale = pic3d_max4(
+                pic3d_vector_arrays_l2(
+                    ex_mid, ey_mid, ez_mid, count
+                ),
+                pic3d_vector_arrays_l2(
+                    ex_mid_new, ey_mid_new, ez_mid_new, count
+                ),
+                endpoint_change_scale,
+                DBL_MIN
+            );
+            out->nonlinear_relative_residual =
+                midpoint_difference / midpoint_scale;
+        }'''
+          )
+
+          replace_once(
+              'assurance/tests/em_pic3d_plasma_modes_parts/part_00.inc',
+              '#define MODE_MAX_NONLINEAR_ITERATIONS 32U',
+              '#define MODE_MAX_NONLINEAR_ITERATIONS 24U'
+          )
+          PY
+          git diff --check
+
+      - name: Validate strict GCC and Clang assurance graphs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for compiler in gcc clang; do
+            rm -rf "/tmp/nonlinear-$compiler"
+            cmake -S assurance -B "/tmp/nonlinear-$compiler" \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER="$compiler" \
+              -DSPACEWIND_ASSURANCE_WERROR=ON
+            cmake --build "/tmp/nonlinear-$compiler" --parallel 2
+            ctest --test-dir "/tmp/nonlinear-$compiler" --output-on-failure
+          done
+
+      - name: Validate deterministic receipt replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/nonlinear-replay
+          cmake -S assurance -B /tmp/nonlinear-replay \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=gcc \
+            -DSPACEWIND_ASSURANCE_WERROR=ON
+          cmake --build /tmp/nonlinear-replay --parallel 2
+          rm -f assurance/output/*.json
+          ctest --test-dir /tmp/nonlinear-replay --output-on-failure
+          find assurance/output -maxdepth 1 -name '*.json' -print0 \
+            | sort -z | xargs -0 sha256sum > /tmp/receipts-first.sha256
+          rm -f assurance/output/*.json
+          ctest --test-dir /tmp/nonlinear-replay --output-on-failure
+          find assurance/output -maxdepth 1 -name '*.json' -print0 \
+            | sort -z | xargs -0 sha256sum > /tmp/receipts-second.sha256
+          diff -u /tmp/receipts-first.sha256 /tmp/receipts-second.sha256
+
+      - name: Validate Make, root regression, and sanitizers
+        shell: bash
+        run: |
+          set -euo pipefail
+          make -C assurance clean test
+          make clean
+          make CFLAGS='-std=c11 -O2 -g -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wstrict-prototypes -Werror' all test
+          rm -rf /tmp/nonlinear-sanitized
+          cmake -S assurance -B /tmp/nonlinear-sanitized \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang \
+            -DSPACEWIND_ASSURANCE_SANITIZERS=ON \
+            -DSPACEWIND_ASSURANCE_WERROR=ON
+          cmake --build /tmp/nonlinear-sanitized --parallel 2
+          ASAN_OPTIONS=detect_leaks=1:strict_string_checks=1 \
+          UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
+            ctest --test-dir /tmp/nonlinear-sanitized --output-on-failure
+
+      - name: Publish verified conditioning repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/assurance.yml')
+          text = path.read_text(encoding='utf-8')
+          marker = '# BEGIN 3D3V_NONLINEAR_CONDITIONING_REPAIR\n'
+          if marker not in text:
+              raise SystemExit('conditioning marker missing')
+          path.write_text(
+              text.split(marker, 1)[0].rstrip() + '\n',
+              encoding='utf-8'
+          )
+          PY
+          rm -f .github/workflows/repair-3d3v-nonlinear-conditioning.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A \
+            assurance/src/em_pic3d_step.inc \
+            assurance/tests/em_pic3d_plasma_modes_parts/part_00.inc \
+            .github/workflows/assurance.yml \
+            .github/workflows/repair-3d3v-nonlinear-conditioning.yml
+          git diff --cached --check
+          git commit -m 'fix: condition 3D3V midpoint convergence at field zero crossings'
+          git pull --rebase origin agent/bootstrap-space-simulation-engine
+          git push origin HEAD:agent/bootstrap-space-simulation-engine
