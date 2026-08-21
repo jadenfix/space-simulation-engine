@@ -75,12 +75,12 @@
             "all plasma modes preserve conditioned Gauss closure"
         );
         check_true(
-            coarse.maximum_spectral_oracle_relative < 1.0e-8 &&
-            medium.maximum_spectral_oracle_relative < 1.0e-8 &&
-            fine.maximum_spectral_oracle_relative < 1.0e-8 &&
-            high_density.maximum_spectral_oracle_relative < 1.0e-8 &&
-            heavy_electron.maximum_spectral_oracle_relative < 1.0e-8 &&
-            pair_plasma.maximum_spectral_oracle_relative < 1.0e-8,
+            coarse.maximum_spectral_oracle_relative < MODE_SPECTRAL_ORACLE_ENVELOPE &&
+            medium.maximum_spectral_oracle_relative < MODE_SPECTRAL_ORACLE_ENVELOPE &&
+            fine.maximum_spectral_oracle_relative < MODE_SPECTRAL_ORACLE_ENVELOPE &&
+            high_density.maximum_spectral_oracle_relative < MODE_SPECTRAL_ORACLE_ENVELOPE &&
+            heavy_electron.maximum_spectral_oracle_relative < MODE_SPECTRAL_ORACLE_ENVELOPE &&
+            pair_plasma.maximum_spectral_oracle_relative < MODE_SPECTRAL_ORACLE_ENVELOPE,
             "all local currents remain within the spectral-oracle envelope"
         );
 

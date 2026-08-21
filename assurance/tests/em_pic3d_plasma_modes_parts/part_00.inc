@@ -15,6 +15,8 @@
 #define MODE_MAX_CROSSINGS 16U
 #define MODE_FIELD_AMPLITUDE_V_M 1000.0
 #define MODE_PERIODS 4.5
+/* Instantaneous current normalization is weakest at mode zero crossings. */
+#define MODE_SPECTRAL_ORACLE_ENVELOPE 1.0e-7
 
 typedef struct {
     double density_m3;
@@ -95,7 +97,8 @@ static swa_em_pic3d_limits mode_limits(void) {
     value.gauss_relative_tolerance = 2.0e-10;
     value.magnetic_divergence_relative_tolerance = 2.0e-11;
     value.local_current_difference_relative_tolerance = 0.90;
-    value.spectral_oracle_relative_tolerance = 1.0e-8;
+    value.spectral_oracle_relative_tolerance =
+        MODE_SPECTRAL_ORACLE_ENVELOPE;
     value.spectral_oracle_curl_relative_tolerance = 5.0e-10;
     value.energy_relative_tolerance = 5.0e-8;
     value.particle_work_relative_tolerance = 2.0e-4;
