@@ -93,6 +93,20 @@
                 step_result.maximum_particle_displacement_cells,
                 step_result.maximum_speed_fraction_c
             );
+            fprintf(
+                stderr,
+                "MODE absolute[cont_max=%.17g cont_rms=%.17g "
+                "g0=%.17g g1=%.17g raw_j=%.17g correction_j=%.17g "
+                "projection_zero=%.17g projection_curl=%.17g]\n",
+                step_result.continuity_residual_max_A_m3,
+                step_result.continuity_residual_rms_A_m3,
+                step_result.initial_gauss_residual_max_C_m3,
+                step_result.final_gauss_residual_max_C_m3,
+                step_result.raw_current_l2_A_m2,
+                step_result.current_correction_l2_A_m2,
+                step_result.current_projection_zero_mode_A_m3,
+                step_result.current_projection_curl_relative
+            );
             swa_em_pic3d_destroy(&state);
             return 0;
         }
