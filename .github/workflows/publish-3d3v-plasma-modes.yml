@@ -1,0 +1,205 @@
+name: publish-3d3v-plasma-modes
+
+on:
+  push:
+    branches:
+      - agent/bootstrap-space-simulation-engine
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-3d3v-plasma-modes
+  cancel-in-progress: false
+
+jobs:
+  validate-and-publish:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout authoritative branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/bootstrap-space-simulation-engine
+          fetch-depth: 0
+
+      - name: Materialize bounded multi-period benchmark
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import gzip
+          import hashlib
+          from pathlib import Path
+
+          encoded = """
+          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
+          """
+          compact = "".join(encoded.split())
+          archive = base64.b64decode(compact, validate=True)
+          source = gzip.decompress(archive)
+          expected = "8d430bf2d509060ea07353596623046edd17545e29fd448791ba24190f2b32de"
+          observed = hashlib.sha256(source).hexdigest()
+          if observed != expected:
+              raise SystemExit(
+                  f"plasma-mode source checksum mismatch: {observed}"
+              )
+          Path("assurance/tests/test_em_pic3d_plasma_modes.c").write_bytes(source)
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              target = Path(path)
+              text = target.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(
+                      f"{path}: expected one match, found {count}"
+                  )
+              target.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+          replace_once(
+              "assurance/CMakeLists.txt",
+              """add_assurance_test(spacewind_assurance_em_pic3d_plasma_diagnostic tests/test_em_pic3d_plasma_diagnostic.c)
+          add_assurance_test(spacewind_assurance_em_pic3d_covariant_integration tests/test_em_pic3d_covariant_integration.c)
+          """,
+              """add_assurance_test(spacewind_assurance_em_pic3d_plasma_diagnostic tests/test_em_pic3d_plasma_diagnostic.c)
+          add_assurance_test(spacewind_assurance_em_pic3d_plasma_modes tests/test_em_pic3d_plasma_modes.c)
+          add_assurance_test(spacewind_assurance_em_pic3d_covariant_integration tests/test_em_pic3d_covariant_integration.c)
+          """,
+          )
+          replace_once(
+              "assurance/Makefile",
+              "em_pic3d em_pic3d_plasma_diagnostic em_pic3d_covariant_integration",
+              "em_pic3d em_pic3d_plasma_diagnostic em_pic3d_plasma_modes em_pic3d_covariant_integration",
+          )
+          PY
+          git diff --check
+          grep -q 'spacewind_assurance_em_pic3d_plasma_modes' assurance/CMakeLists.txt
+          grep -q 'em_pic3d_plasma_modes' assurance/Makefile
+
+      - name: Strict GCC and Clang assurance graphs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for compiler in gcc clang; do
+            rm -rf "/tmp/plasma-modes-$compiler"
+            cmake -S assurance -B "/tmp/plasma-modes-$compiler" \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_COMPILER="$compiler" \
+              -DSPACEWIND_ASSURANCE_WERROR=ON
+            cmake --build "/tmp/plasma-modes-$compiler" --parallel 2
+            ctest --test-dir "/tmp/plasma-modes-$compiler" --output-on-failure
+          done
+
+      - name: Standalone Make and root regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          make -C assurance clean test
+          python3 -m json.tool \
+            assurance/output/em_pic3d_plasma_modes_receipt.json >/dev/null
+          make clean
+          make CFLAGS='-std=c11 -O2 -g -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Wstrict-prototypes -Werror' all test
+
+      - name: Sanitizer validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/plasma-modes-sanitized
+          cmake -S assurance -B /tmp/plasma-modes-sanitized \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang \
+            -DSPACEWIND_ASSURANCE_SANITIZERS=ON \
+            -DSPACEWIND_ASSURANCE_WERROR=ON
+          cmake --build /tmp/plasma-modes-sanitized --parallel 2
+          ASAN_OPTIONS=detect_leaks=1:strict_string_checks=1 \
+          UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1 \
+            ctest --test-dir /tmp/plasma-modes-sanitized --output-on-failure
+
+      - name: Show deterministic plasma-mode receipt
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m json.tool \
+            assurance/output/em_pic3d_plasma_modes_receipt.json
+
+      - name: Publish only after unchanged gates pass
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/publish-3d3v-plasma-modes.yml
+          git config user.name 'Jaden Fix'
+          git config user.email '163031992+jadenfix@users.noreply.github.com'
+          git add -A \
+            assurance/CMakeLists.txt \
+            assurance/Makefile \
+            assurance/tests/test_em_pic3d_plasma_modes.c \
+            .github/workflows/publish-3d3v-plasma-modes.yml
+          git diff --cached --check
+          git commit -m 'test: validate multi-period 3D3V plasma modes'
+          git pull --rebase origin agent/bootstrap-space-simulation-engine
+          git push origin HEAD:agent/bootstrap-space-simulation-engine
