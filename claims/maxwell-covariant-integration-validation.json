@@ -1,0 +1,21 @@
+{
+  "schema": "spacewind.validation-intent.v1",
+  "artifact": "spacewind-maxwell-covariant-integration",
+  "required_workflows": [
+    "native-spacewind",
+    "spacewind-assurance",
+    "spacewind-pde-assurance",
+    "spacewind-robustness-assurance"
+  ],
+  "required_checks": [
+    "Linux GCC warning-as-error build",
+    "Linux Clang warning-as-error build",
+    "macOS ARM64 Clang build",
+    "complete assurance CTest matrix",
+    "deterministic receipt replay",
+    "address and undefined-behavior sanitizers",
+    "static analysis",
+    "root-engine regression"
+  ],
+  "nonclaim": "This file declares validation intent and triggers the normal repository matrix. It is not itself workflow evidence and it does not establish self-consistent particle-field momentum closure or propulsion."
+}

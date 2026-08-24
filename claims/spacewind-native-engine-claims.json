@@ -1,0 +1,99 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-native",
+  "version": "0.2.0",
+  "claims": [
+    {
+      "id": "SWN-0001",
+      "type": "finite_check",
+      "statement": "The strict native test executable passes 3912 bounded checks in the recorded validation run.",
+      "evidence": [
+        "tests/test_main.c",
+        "docs/VALIDATION.md"
+      ],
+      "nonclaims": [
+        "A passing test suite does not validate a field-sail propulsion concept.",
+        "The count may change as tests are added."
+      ]
+    },
+    {
+      "id": "SWN-0002",
+      "type": "equation_implementation",
+      "statement": "The analytic heliosphere path implements an isothermal transonic Parker solution, mass-flux density, Parker spiral magnetic field, and ideal-MHD motional electric field.",
+      "evidence": [
+        "src/fields.c",
+        "docs/PHYSICS.md"
+      ],
+      "nonclaims": [
+        "This is not a live solar-weather forecast.",
+        "It omits multi-fluid and kinetic heliosphere physics."
+      ]
+    },
+    {
+      "id": "SWN-0003",
+      "type": "finite_check",
+      "statement": "The 17^3 manufactured Poisson problem reaches relative residual below 1e-9 and discrete L2 potential error below 0.4 percent in the bounded test.",
+      "evidence": [
+        "src/gravity_grid.c",
+        "tests/test_main.c"
+      ],
+      "nonclaims": [
+        "The weak-field grid is not a solver for the nonlinear Einstein equations."
+      ]
+    },
+    {
+      "id": "SWN-0004",
+      "type": "model_result",
+      "statement": "The supplied synthetic shear configuration can be propagated with the parameterized electric-sail and dynamic-soaring controller models.",
+      "evidence": [
+        "configs/dynamic_soaring_shear.cfg",
+        "src/spacecraft.c"
+      ],
+      "nonclaims": [
+        "The configured lift coefficient is not experimentally established.",
+        "The synthetic boundary is not asserted to be a universal space medium.",
+        "A simulated speed change is not proof of a realizable vehicle."
+      ]
+    },
+    {
+      "id": "SWN-0005",
+      "type": "open_problem",
+      "statement": "Determine whether a compact field-sail device can generate repeatable commandable transverse force with sufficient lift-to-drag ratio and power-to-mass in representative solar-wind plasma.",
+      "required_evidence": [
+        "calibrated plasma-chamber force measurements",
+        "multidimensional kinetic simulation",
+        "uncertainty-qualified force and torque response surface",
+        "deployment and high-voltage flight demonstration"
+      ]
+    },
+    {
+      "id": "SWN-0006",
+      "type": "finite_check",
+      "statement": "The supplied Kerr demonstration numerically closes one prograde equatorial circular orbit at r=10M and a/M=0.8 while preserving the selected interval and constants to floating-point tolerance.",
+      "evidence": [
+        "src/metric.c",
+        "src/cli.c",
+        "tests/test_main.c",
+        "docs/VALIDATION.md"
+      ],
+      "nonclaims": [
+        "This bounded geodesic check is not a numerical-relativity solution of the Einstein field equations.",
+        "It does not cover generic inclined, eccentric, radiating, or self-gravitating motion."
+      ]
+    },
+    {
+      "id": "SWN-0007",
+      "type": "finite_check",
+      "statement": "The hybrid_glider configuration completes one adaptive integration with all mission-level force paths enabled and emits a valid versioned JSON receipt.",
+      "evidence": [
+        "configs/hybrid_glider.cfg",
+        "src/simulation.c",
+        "docs/VALIDATION.md"
+      ],
+      "nonclaims": [
+        "The configured electric and magnetic sail response parameters are not experimentally validated.",
+        "Successful numerical integration does not establish hardware feasibility or net-energy extraction."
+      ]
+    }
+  ]
+}

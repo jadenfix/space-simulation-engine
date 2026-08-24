@@ -1,0 +1,47 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-maxwell1d-spectral-reference",
+  "version": "0.1.0",
+  "claims": [
+    {
+      "id": "SW-MX1-0001",
+      "type": "equation_implementation",
+      "statement": "The assurance kernel implements the periodic transverse 1D Maxwell equations through direct-DFT translation of four characteristic fields.",
+      "evidence": [
+        "assurance/include/spacewind/maxwell1d_reference.h",
+        "assurance/src/maxwell1d_reference.c",
+        "docs/MAXWELL1D_SPECTRAL_REFERENCE.md"
+      ],
+      "nonclaims": [
+        "The direct DFT is a verification oracle rather than a production FFT.",
+        "Longitudinal charge, current, and particle motion are not represented by this module."
+      ]
+    },
+    {
+      "id": "SW-MX1-0002",
+      "type": "finite_check",
+      "statement": "Bounded deterministic tests verify exact represented-mode translation, energy and momentum invariance, time reversal, deterministic replay, polarization covariance, prescribed-current midpoint work, and fail-closed input contracts on odd periodic grids.",
+      "evidence": [
+        "assurance/tests/test_maxwell1d_reference.c",
+        "assurance/output/maxwell1d_reference_receipt.json"
+      ],
+      "nonclaims": [
+        "Finite tests are not a universal convergence theorem.",
+        "A prescribed-current field ledger is not particle-plus-field energy closure."
+      ]
+    },
+    {
+      "id": "SW-MX1-0003",
+      "type": "open_problem",
+      "statement": "Cross-check the self-consistent 1D3V electromagnetic PIC solver against this oracle for dispersion, polarization, Poynting flux, field momentum, current work, and particle-plus-field conservation.",
+      "required_evidence": [
+        "charge-conserving longitudinal current",
+        "shape-consistent transverse current and field interpolation",
+        "relativistic midpoint or bounded nonlinear particle solve",
+        "particle plus field energy closure",
+        "field plus mechanical momentum closure",
+        "grid, timestep, particle-count, shape-order, and domain refinement"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-open-boundary-four-momentum-assurance",
+  "version": "0.1.0",
+  "claims": [
+    {
+      "id": "SW-OB-0001",
+      "type": "equation_implementation",
+      "statement": "The assurance kernel converts electromagnetic stress-energy at an oriented surface into outward four-momentum flux n_i T^{i nu}, with the time component independently checked against normal Poynting flux and the spatial components against negative conventional Maxwell traction.",
+      "evidence": [
+        "assurance/include/spacewind/open_boundary.h",
+        "assurance/src/open_boundary.c",
+        "docs/OPEN_BOUNDARY_FOUR_MOMENTUM.md"
+      ],
+      "nonclaims": [
+        "A local boundary-flux identity is not a multidimensional kinetic plasma-wing force result."
+      ]
+    },
+    {
+      "id": "SW-OB-0002",
+      "type": "finite_check",
+      "statement": "Manufactured right- and left-moving plane-wave slabs close their field four-momentum through the appropriate outward boundary, while thousands of arbitrary fields reproduce Poynting and Maxwell-traction identities.",
+      "evidence": [
+        "assurance/tests/test_open_boundary.c",
+        "assurance/output/open_boundary_receipt.json"
+      ],
+      "nonclaims": [
+        "These bounded manufactured states are not a universal open-boundary convergence proof."
+      ]
+    },
+    {
+      "id": "SW-OB-0003",
+      "type": "finite_check",
+      "statement": "Relativistic particle crossings are classified as inward or outward by velocity relative to the declared surface normal and close in the same field-plus-matter four-momentum ledger; an untracked boundary impulse is rejected.",
+      "evidence": [
+        "assurance/tests/test_open_boundary.c",
+        "docs/OPEN_BOUNDARY_FOUR_MOMENTUM.md"
+      ],
+      "nonclaims": [
+        "Discrete crossing bookkeeping does not model material-surface interactions, emission, or sheath physics."
+      ]
+    },
+    {
+      "id": "SW-OB-0004",
+      "type": "open_problem",
+      "statement": "Wire the open-boundary four-momentum contract into every timestep of a multidimensional electromagnetic kinetic solver and demonstrate convergence before promoting force or torque response surfaces.",
+      "required_evidence": [
+        "2D3V or 3D3V charge-conserving electromagnetic PIC",
+        "time-resolved Poynting boundary flux",
+        "time-resolved Maxwell-stress impulse",
+        "particle inward/outward four-momentum flux",
+        "joint volume-plus-boundary four-momentum closure",
+        "grid, timestep, particle-count, shape-order, and domain refinement",
+        "chamber-calibrated force and torque comparison"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+name: spacewind-pde-assurance
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pde-verification:
+    name: pde-${{ matrix.os }}-${{ matrix.compiler }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            compiler: gcc
+          - os: ubuntu-latest
+            compiler: clang
+          - os: macos-14
+            compiler: clang
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure independent PDE checks
+        run: >-
+          cmake -S assurance/pde -B build-pde-assurance
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_C_COMPILER=${{ matrix.compiler }}
+      - name: Build
+        run: cmake --build build-pde-assurance --parallel 2
+      - name: Run manufactured and convergence checks
+        run: ctest --test-dir build-pde-assurance --output-on-failure
+      - name: Validate receipt
+        run: python3 -m json.tool assurance/output/pde_assurance_receipt.json >/dev/null
+
+  pde-sanitizers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: >-
+          cmake -S assurance/pde -B build-pde-sanitized
+          -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_C_COMPILER=clang
+          -DSPACEWIND_PDE_SANITIZERS=ON
+      - name: Build
+        run: cmake --build build-pde-sanitized --parallel 2
+      - name: Test
+        env:
+          ASAN_OPTIONS: detect_leaks=1:strict_string_checks=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: ctest --test-dir build-pde-sanitized --output-on-failure

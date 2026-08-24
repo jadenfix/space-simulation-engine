@@ -1,0 +1,61 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-periodic-cic-transport",
+  "version": "0.1.0",
+  "claims": [
+    {
+      "id": "SW-CD-0001",
+      "type": "equation_implementation",
+      "statement": "The assurance kernel assigns particle charge with a periodic cell-centered linear CIC shape and reconstructs a face current satisfying the same finite-volume continuity operator.",
+      "evidence": [
+        "assurance/include/spacewind/charge_deposition.h",
+        "assurance/src/charge_deposition.c",
+        "docs/CHARGE_CONSERVING_DEPOSITION.md"
+      ],
+      "nonclaims": [
+        "The reference reconstruction is global rather than a final local multidimensional PIC deposition algorithm.",
+        "Discrete continuity alone does not establish physical plasma-model fidelity."
+      ]
+    },
+    {
+      "id": "SW-CD-0002",
+      "type": "finite_check",
+      "statement": "The bounded deterministic suite checks zero motion, multi-wrap periodic transport, long mixed-sign particle motion, time reversal, particle-order stability, and invalid-input rejection.",
+      "evidence": [
+        "assurance/tests/test_charge_deposition.c",
+        "assurance/output/charge_deposition_receipt.json"
+      ],
+      "nonclaims": [
+        "A passing finite suite is not a convergence theorem.",
+        "Generated receipts are reproducibility artifacts rather than chamber or flight evidence."
+      ]
+    },
+    {
+      "id": "SW-CD-0003",
+      "type": "equation_implementation",
+      "statement": "The periodic current null space is fixed from unwrapped particle displacement so multi-wrap transported charge is retained even when wrapped endpoint charge densities are identical.",
+      "evidence": [
+        "assurance/src/charge_deposition.c",
+        "docs/CHARGE_CONSERVING_DEPOSITION.md#3-the-harmonic-current-is-not-determined-by-continuity"
+      ],
+      "nonclaims": [
+        "The selected harmonic current does not resolve multidimensional transverse-current structure."
+      ]
+    },
+    {
+      "id": "SW-CD-0004",
+      "type": "open_problem",
+      "statement": "Implement and independently compare a local multidimensional charge-conserving trajectory deposition inside the electromagnetic kinetic solver.",
+      "required_evidence": [
+        "shared particle shape and field staggering",
+        "cell-crossing trajectory decomposition",
+        "local continuity at every accepted timestep",
+        "agreement with the independent periodic reference",
+        "Gauss-law preservation",
+        "particle and field energy closure",
+        "field and mechanical momentum closure",
+        "grid, timestep, particle-count, and domain refinement"
+      ]
+    }
+  ]
+}

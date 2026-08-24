@@ -1,0 +1,33 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-four-momentum-delta-ledger",
+  "version": "0.1.0",
+  "claims": [
+    {
+      "id": "SW-P4D-0001",
+      "type": "equation_implementation",
+      "statement": "The assurance kernel implements an incremental four-momentum ledger whose residual is formed directly from field change, matter change, external impulse, inward transport, and outward transport rather than by subtracting large total initial and final four-momenta.",
+      "evidence": [
+        "assurance/include/spacewind/four_momentum_delta.h",
+        "assurance/src/four_momentum_delta.c",
+        "docs/FOUR_MOMENTUM_DELTA_LEDGER.md"
+      ],
+      "nonclaims": [
+        "Avoiding floating-point cancellation does not establish that every physical source or boundary term has been modeled."
+      ]
+    },
+    {
+      "id": "SW-P4D-0002",
+      "type": "finite_check",
+      "statement": "The incremental ledger can be Lorentz-transformed term by term, and bounded tests require the residual reconstructed in a boosted frame to agree with the Lorentz transform of the laboratory residual.",
+      "evidence": [
+        "assurance/src/four_momentum_delta.c",
+        "assurance/tests/test_em_pic3d_covariant_integration.c",
+        "assurance/output/em_pic3d_covariant_receipt.json"
+      ],
+      "nonclaims": [
+        "Covariant ledger bookkeeping does not make a complete discretization Lorentz invariant."
+      ]
+    }
+  ]
+}

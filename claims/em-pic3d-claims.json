@@ -1,0 +1,79 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-em-pic3d-assurance",
+  "version": "0.2.0",
+  "claims": [
+    {
+      "id": "SW-EM3D-0001",
+      "type": "equation_implementation",
+      "statement": "The assurance kernel implements a bounded periodic three-dimensional, three-velocity-component electromagnetic particle-in-cell reference with a staggered Yee field topology, a symmetric magnetic-half/electric-full/magnetic-half Maxwell update, trilinear CIC charge and field coupling, and a relativistic Higuera-Cary particle pusher.",
+      "evidence": [
+        "assurance/include/spacewind/em_pic3d.h",
+        "assurance/src/em_pic3d.c",
+        "docs/EM_PIC3D_REFERENCE.md"
+      ],
+      "nonclaims": [
+        "The periodic Cartesian reference is not an open spacecraft or plasma-wing interaction domain.",
+        "The explicit midpoint coupling is not claimed to conserve energy or momentum to roundoff for arbitrary states."
+      ]
+    },
+    {
+      "id": "SW-EM3D-0002",
+      "type": "finite_check",
+      "statement": "The field-driving current is reconstructed by averaging all six coordinate-split finite-volume charge-transport paths; every path order telescopes between the same endpoint CIC charge deposits, and the complete periodic harmonic current is fixed from unwrapped particle motion.",
+      "evidence": [
+        "assurance/src/em_pic3d_deposition.inc",
+        "assurance/tests/test_em_pic3d.c",
+        "assurance/output/em_pic3d_reference_receipt.json"
+      ],
+      "nonclaims": [
+        "The bounded first-order coordinate-split construction is not claimed algebraically identical to the general Esirkepov arbitrary-shape deposition.",
+        "Exact discrete continuity does not by itself establish accurate energy, momentum, force, or plasma-material coupling."
+      ]
+    },
+    {
+      "id": "SW-EM3D-0003",
+      "type": "finite_check",
+      "statement": "A separately implemented path-integrated current audits particle work, while a direct long-double-complex 3D DFT minimum-norm continuity projection acts as an independent oracle and must leave the field-driving charge-conserving current unchanged to near roundoff.",
+      "evidence": [
+        "assurance/src/em_pic3d_deposition.inc",
+        "assurance/src/em_pic3d_spectral.inc",
+        "assurance/tests/test_em_pic3d.c",
+        "assurance/output/em_pic3d_step_receipt.json"
+      ],
+      "nonclaims": [
+        "The spectral oracle is an intentionally nonlocal verification method and is not the production field-driving current.",
+        "Agreement among implemented currents does not prove that all physically relevant subgrid processes are modeled."
+      ]
+    },
+    {
+      "id": "SW-EM3D-0004",
+      "type": "finite_check",
+      "statement": "Bounded deterministic tests cover discrete div-curl identities, three-axis plane-wave propagation and refinement, vacuum reversal, relativistic pusher invariants and RK4 comparison, Gauss initialization, multi-wrap current transport, local-current reversal and translation symmetry, cyclic-axis covariance, coupled neutral relativistic plasma evolution, fail-closed adversarial corruption, and deterministic receipt replay. Rejected finite timesteps are additionally required to preserve the complete public particle and field state bit-for-bit; only a fully passing receipt may commit the candidate state.",
+      "evidence": [
+        "assurance/tests/test_em_pic3d.c",
+        ".github/workflows/assurance.yml"
+      ],
+      "nonclaims": [
+        "The tested parameter ranges are finite and do not constitute universal convergence evidence.",
+        "A periodic numerical reference is not chamber or flight evidence."
+      ]
+    },
+    {
+      "id": "SW-EM3D-0005",
+      "type": "open_problem",
+      "statement": "Promote the reference into an independently replicated open-boundary electromagnetic kinetic control volume suitable for spacecraft force and torque studies.",
+      "required_evidence": [
+        "production local Esirkepov or independently equivalent higher-order current deposition",
+        "higher-order matched particle gather and scatter",
+        "open electromagnetic boundaries with quantified reflection",
+        "particle injection, absorption, reflection, and secondary emission",
+        "local Poynting flux, Maxwell-stress impulse, and particle boundary four-momentum every timestep",
+        "collisions, ionization, recombination, sheath, charging, emission, arcing, and material response",
+        "grid, timestep, particle-count, shape-order, domain-size, and boundary-condition refinement",
+        "independent implementation agreement",
+        "reversible replicated chamber force and torque measurements"
+      ]
+    }
+  ]
+}

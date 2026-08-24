@@ -1,0 +1,47 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-covariant-electromagnetic-assurance",
+  "version": "0.1.0",
+  "claims": [
+    {
+      "id": "SW-CEM-0001",
+      "type": "equation_implementation",
+      "statement": "The assurance kernel constructs the electromagnetic field tensor, stress-energy tensor, four-current, Lorentz four-force density, particle four-momentum, Lorentz boosts, and total four-momentum ledgers in SI units with the declared -+++ metric convention.",
+      "evidence": [
+        "assurance/include/spacewind/covariant_em.h",
+        "assurance/src/covariant_em.c",
+        "docs/COVARIANT_STRESS_ENERGY.md"
+      ],
+      "nonclaims": [
+        "This special-relativistic layer is not a nonlinear Einstein-equation solver.",
+        "Tensor covariance does not establish physical completeness of a plasma interaction model."
+      ]
+    },
+    {
+      "id": "SW-CEM-0002",
+      "type": "finite_check",
+      "statement": "Deterministic bounded tests require electromagnetic scalar invariance, field-tensor covariance, stress-energy covariance, four-force covariance, dominant-energy bounds, mass-shell closure, inverse-boost recovery, null plane-wave structure, and fail-closed four-momentum accounting.",
+      "evidence": [
+        "assurance/tests/test_covariant_em.c",
+        "assurance/output/covariant_em_receipt.json"
+      ],
+      "nonclaims": [
+        "Finite samples are not a universal proof for all fields and boosts.",
+        "Passing tests do not establish plasma-wing thrust or net energy extraction."
+      ]
+    },
+    {
+      "id": "SW-CEM-0003",
+      "type": "open_problem",
+      "statement": "Connect the covariant field-plus-matter ledger directly to every self-consistent electromagnetic PIC step and to control-volume boundary fluxes.",
+      "required_evidence": [
+        "particle and field four-momentum from the same timestep",
+        "boundary Maxwell-stress and Poynting flux",
+        "external source four-impulse",
+        "relativistic charge-conserving current deposition",
+        "grid, timestep, particle-count, and domain refinement",
+        "independent implementation agreement"
+      ]
+    }
+  ]
+}

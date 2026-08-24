@@ -1,0 +1,61 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-field-particle-ledger",
+  "version": "0.1.0",
+  "claims": [
+    {
+      "id": "SW-FL-0001",
+      "type": "equation_implementation",
+      "statement": "The assurance kernel evaluates cell-local and domain-global discrete charge continuity on a two-dimensional staggered grid.",
+      "evidence": [
+        "assurance/include/spacewind/field_ledger.h",
+        "assurance/src/field_ledger.c",
+        "docs/FIELD_AND_PARTICLE_LEDGER.md"
+      ],
+      "nonclaims": [
+        "The audit does not itself provide charge-conserving current deposition.",
+        "Passing continuity does not validate the physical completeness of the plasma model."
+      ]
+    },
+    {
+      "id": "SW-FL-0002",
+      "type": "finite_check",
+      "statement": "Manufactured charge-continuity, Gauss-law, and divergence-free magnetic-field cases close within declared tolerances, while injected local corruptions are rejected by the deterministic test.",
+      "evidence": [
+        "assurance/tests/test_field_ledger.c",
+        "assurance/output/field_ledger_receipt.json"
+      ],
+      "nonclaims": [
+        "Manufactured finite checks are not a convergence theorem for a production electromagnetic PIC solver.",
+        "The committed repository does not treat generated output receipts as immutable experimental evidence."
+      ]
+    },
+    {
+      "id": "SW-FL-0003",
+      "type": "equation_implementation",
+      "statement": "The assurance kernel separately audits Poynting energy, electromagnetic plus mechanical momentum, local field momentum, and Maxwell traction using explicit sign conventions.",
+      "evidence": [
+        "assurance/src/field_ledger.c",
+        "docs/FIELD_AND_PARTICLE_LEDGER.md"
+      ],
+      "nonclaims": [
+        "A closed integral ledger does not prove that the local force discretization is accurate.",
+        "Maxwell-stress force must still agree with particle and material momentum transfer under refinement."
+      ]
+    },
+    {
+      "id": "SW-FL-0004",
+      "type": "open_problem",
+      "statement": "Connect the ledger to every accepted timestep of a multidimensional electromagnetic kinetic plasma solver with charge-conserving deposition and shared control surfaces.",
+      "required_evidence": [
+        "charge-conserving current deposition",
+        "Gauss-law preservation or explicit correction ledger",
+        "magnetic-divergence control",
+        "particle plus field Poynting closure",
+        "Maxwell-stress and particle-momentum agreement",
+        "grid, timestep, particle-count, and domain refinement",
+        "calibrated chamber comparison"
+      ]
+    }
+  ]
+}

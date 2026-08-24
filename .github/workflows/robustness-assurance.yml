@@ -1,0 +1,55 @@
+name: spacewind-robustness-assurance
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  robustness:
+    name: robustness-${{ matrix.os }}-${{ matrix.compiler }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            compiler: gcc
+          - os: ubuntu-latest
+            compiler: clang
+          - os: macos-14
+            compiler: clang
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure adversarial checks
+        run: >-
+          cmake -S assurance/robustness -B build-robustness
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_C_COMPILER=${{ matrix.compiler }}
+      - name: Build
+        run: cmake --build build-robustness --parallel 2
+      - name: Run low-discrepancy perturbation suite
+        run: ctest --test-dir build-robustness --output-on-failure
+      - name: Validate receipt
+        run: python3 -m json.tool assurance/output/robustness_assurance_receipt.json >/dev/null
+
+  robustness-sanitizers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure sanitizer build
+        run: >-
+          cmake -S assurance/robustness -B build-robustness-sanitized
+          -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_C_COMPILER=clang
+          -DSPACEWIND_ROBUSTNESS_SANITIZERS=ON
+      - name: Build
+        run: cmake --build build-robustness-sanitized --parallel 2
+      - name: Test under sanitizers
+        env:
+          ASAN_OPTIONS: detect_leaks=1:strict_string_checks=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: ctest --test-dir build-robustness-sanitized --output-on-failure

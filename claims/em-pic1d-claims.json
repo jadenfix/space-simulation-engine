@@ -1,0 +1,63 @@
+{
+  "schema": "spacewind.claims.v1",
+  "artifact": "spacewind-em-pic1d-assurance",
+  "version": "0.1.0",
+  "claims": [
+    {
+      "id": "SW-EM1D-0001",
+      "type": "equation_implementation",
+      "statement": "The assurance kernel implements a periodic one-dimensional, three-velocity-component electromagnetic particle-field reference with face-centered electric fields, cell-centered transverse magnetic fields, a uniform longitudinal magnetic field, relativistic Boris particle motion, and a symmetric Yee-style Maxwell update.",
+      "evidence": [
+        "assurance/include/spacewind/em_pic1d.h",
+        "assurance/src/em_pic1d.c",
+        "docs/EM_PIC1D_REFERENCE.md"
+      ],
+      "nonclaims": [
+        "The one-dimensional periodic geometry is not a multidimensional plasma-wing model.",
+        "The explicit coupling is not claimed to conserve energy or momentum to roundoff for arbitrary states."
+      ]
+    },
+    {
+      "id": "SW-EM1D-0002",
+      "type": "finite_check",
+      "statement": "The longitudinal current closes the finite-volume continuity equation and transports the harmonic current from unwrapped particle motion; initial and final Gauss law, the harmonic Ampere identity, and transverse path-current partition are audited independently each step.",
+      "evidence": [
+        "assurance/src/em_pic1d.c",
+        "assurance/tests/test_em_pic1d.c",
+        "assurance/output/em_pic1d_vacuum_receipt.json"
+      ],
+      "nonclaims": [
+        "Passing bounded charge and field ledgers does not validate a plasma-wing force law."
+      ]
+    },
+    {
+      "id": "SW-EM1D-0003",
+      "type": "finite_check",
+      "statement": "Bounded tests cover long-run vacuum-wave propagation, timestep refinement, a neutral relativistic mixed-sign plasma, grid-face path crossing, nonzero harmonic current, electromagnetic CFL rejection, nonneutral periodic charge rejection, luminal-particle rejection, and deliberate Gauss-law corruption.",
+      "evidence": [
+        "assurance/tests/test_em_pic1d.c",
+        ".github/workflows/assurance.yml"
+      ],
+      "nonclaims": [
+        "The tested grids, particles, fields, and timesteps do not constitute universal convergence evidence.",
+        "A bounded one-dimensional result is not chamber or flight evidence."
+      ]
+    },
+    {
+      "id": "SW-EM1D-0004",
+      "type": "open_problem",
+      "statement": "Promote the reference into a multidimensional electromagnetic kinetic solver and a chamber-calibrated plasma-wing force model.",
+      "required_evidence": [
+        "two- or three-dimensional local charge-conserving current deposition",
+        "divergence-preserving magnetic update",
+        "open-boundary Poynting and Maxwell-stress fluxes",
+        "particle-plus-field energy and momentum closure under refinement",
+        "kinetic electrons and spacecraft charging",
+        "surface, emitter, arcing, thermal, and structural coupling",
+        "grid, timestep, particle-count, shape-order, domain, and boundary-condition refinement",
+        "independent implementation agreement",
+        "reversible replicated chamber force and torque measurements"
+      ]
+    }
+  ]
+}
