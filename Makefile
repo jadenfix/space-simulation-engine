@@ -1,4 +1,5 @@
 CC ?= cc
+PYTHON ?= python3
 AR ?= ar
 BUILD_DIR ?= build
 CPPFLAGS ?= -Iinclude
@@ -14,6 +15,7 @@ LIB_SOURCES := \
 	src/metric.c \
 	src/fields.c \
 	src/spacecraft.c \
+	src/sail_validation.c \
 	src/integrator.c \
 	src/plasma.c \
 	src/mhd1d.c \
@@ -85,3 +87,8 @@ package:
 
 clean:
 	rm -rf $(BUILD_DIR) output/*.csv output/*.json
+
+# Optional validation tooling; no Python dependency for the native CLI itself.
+.PHONY: validation-tools
+validation-tools: $(BINARY)
+	SPACEWIND_TEST_BINARY="$(abspath $(BINARY))" $(PYTHON) -m unittest discover -s tests -p 'test_sail_validation_tools.py' -v

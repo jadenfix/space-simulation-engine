@@ -10,3 +10,7 @@ assurance/output/*.json
 *.gcda
 *.gcno
 *.gcov
+
+__pycache__/
+*.pyc
+output/validation/
