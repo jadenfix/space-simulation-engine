@@ -1,0 +1,31 @@
+{
+  "schema": "spacewind.convergence-input.v1",
+  "observable": "manufactured_force_x",
+  "units": "N",
+  "solver_revision": "manufactured-test-only",
+  "geometry_sha256": "be83ec582156f389dec81d7c1dbe3acbdb2835bae52919d8922d7acb975cf99a",
+  "case_sha256": "487581da0efdf9026aa1f6fc29411b1cbbd59d88fbefbf1973b5e6403e4271fc",
+  "levels": [
+    {
+      "h": 1,
+      "value": 10.2,
+      "standard_error": 0,
+      "run_sha256": "7a04521c92963710d2095a7cf38f3b609bd1ea22d058df46844c4da3cec747f1"
+    },
+    {
+      "h": 0.5,
+      "value": 10.05,
+      "standard_error": 0,
+      "run_sha256": "1b549931054ff5f9b852f33287c77d24a16884e7899d9efe44557935588b52af"
+    },
+    {
+      "h": 0.25,
+      "value": 10.0125,
+      "standard_error": 0,
+      "run_sha256": "c8f633338f5dd8ea71c96c8e7c270aca4e18c064039457dd3124235e9cfe26aa"
+    }
+  ],
+  "absolute_tolerance": 1e-05,
+  "relative_tolerance": 0.005,
+  "minimum_order": 1.8
+}

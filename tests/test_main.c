@@ -9,6 +9,8 @@
 #include "spacewind/plasma.h"
 #include "spacewind/simulation.h"
 #include "spacewind/spacecraft.h"
+#include "spacewind/sail_validation.h"
+#include <float.h>
 
 #include <math.h>
 #include <stdbool.h>
@@ -466,7 +468,78 @@ static void test_force_and_simulation(void) {
     sw_simulation_destroy(&simulation);
 }
 
+static void test_sail_stream_screen(void) {
+    sw_sail_stream_screen screen;
+    unsigned i;
+    SW_CHECK(sw_sail_screen_cold_passive_stream(0.0, 0.0, &screen));
+    SW_CHECK(screen.passive_necessary_bound_satisfied);
+    SW_CHECK(sw_sail_screen_cold_passive_stream(2.0, 0.0, &screen));
+    SW_CHECK(screen.passive_necessary_bound_satisfied);
+    SW_CHECK(sw_sail_screen_cold_passive_stream(1.0, 1.0, &screen));
+    SW_CHECK(screen.passive_necessary_bound_satisfied);
+    SW_CHECK(sw_sail_screen_cold_passive_stream(0.4, 1.2, &screen));
+    SW_CHECK(!screen.passive_necessary_bound_satisfied);
+    SW_CHECK(sw_near(screen.outgoing_kinetic_power_lower_bound_ratio, 1.8, 1e-14, 1e-14));
+    SW_CHECK(sw_near(screen.additional_power_lower_bound_over_incoming, 0.8, 1e-14, 1e-14));
+    SW_CHECK(sw_sail_screen_cold_passive_stream(0.4, -1.2, &screen));
+    SW_CHECK(!screen.passive_necessary_bound_satisfied);
+    SW_CHECK(sw_sail_screen_cold_passive_stream(-0.1, 0.0, &screen));
+    SW_CHECK(!screen.passive_necessary_bound_satisfied);
+    SW_CHECK(!sw_sail_screen_cold_passive_stream(NAN, 0.0, &screen));
+    SW_CHECK(!screen.valid && !screen.passive_necessary_bound_satisfied);
+    SW_CHECK(!sw_sail_screen_cold_passive_stream(0.0, INFINITY, &screen));
+    SW_CHECK(!screen.valid);
+    SW_CHECK(!sw_sail_screen_cold_passive_stream(DBL_MAX, DBL_MAX, &screen));
+    SW_CHECK(!screen.valid);
+    SW_CHECK(!sw_sail_screen_cold_passive_stream(1.0, 0.0, NULL));
+    /* Elastic deflection of a cold stream lies on the bound at every angle. */
+    for (i = 0U; i <= 64U; ++i) {
+        const double angle = SW_PI * (double)i / 64.0;
+        SW_CHECK(sw_sail_screen_cold_passive_stream(1.0-cos(angle), sin(angle), &screen));
+        SW_CHECK(screen.passive_necessary_bound_satisfied);
+    }
+}
+
+static void test_uniform_stream_work(void) {
+    sw_vehicle vehicle;
+    sw_spacecraft_state state;
+    sw_environment_sample environment;
+    sw_control_output control;
+    const double lifts[3] = {-1.2, 0.0, 1.2};
+    size_t i;
+    sw_vehicle_default(&vehicle);
+    sw_spacecraft_state_default(&state);
+    memset(&environment, 0, sizeof(environment));
+    memset(&control, 0, sizeof(control));
+    environment.wind_velocity_m_s = sw_v3(400000.0, 0.0, 0.0);
+    environment.mass_density_kg_m3 = 1e-20;
+    environment.electron_temperature_k = 1e5;
+    environment.debye_length_m = 10.0;
+    state.velocity_m_s = sw_v3(1000.0, 1500.0, -100.0);
+    control.electric_voltage_scale = 1.0;
+    control.desired_lift_direction = sw_v3(0.0, 1.0, 0.0);
+    vehicle.electric_sail_cd = 0.4;
+    for (i = 0U; i < 3U; ++i) {
+        double radius = 0.0;
+        sw_vec3 force;
+        const sw_vec3 rel = sw_v3_sub(environment.wind_velocity_m_s, state.velocity_m_s);
+        const double speed = sw_v3_norm(rel);
+        double expected_loss;
+        vehicle.electric_sail_cl = lifts[i];
+        force = sw_electric_sail_force(&vehicle, &state, &environment, &control, &radius);
+        expected_loss = environment.mass_density_kg_m3 * speed * speed * speed
+            * 2.0 * vehicle.total_tether_length_m * radius * vehicle.electric_sail_cd;
+        SW_CHECK(sw_v3_dot(sw_v3_scale(rel, -1.0), force) <= 0.0);
+        SW_CHECK(sw_near(sw_v3_dot(rel, force), expected_loss, 1e-12, 1e-12));
+    }
+    /* Zero bias must not secretly retain the assumed transverse force. */
+    control.electric_voltage_scale = 0.0;
+    SW_CHECK(sw_v3_norm(sw_electric_sail_force(&vehicle, &state, &environment, &control, NULL)) == 0.0);
+}
+
 int main(void) {
+    test_sail_stream_screen();
+    test_uniform_stream_work();
     test_vectors_and_matrix();
     test_metric();
     test_additional_metrics();

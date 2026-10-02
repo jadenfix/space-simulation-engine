@@ -1,0 +1,27 @@
+{
+  "schema": "spacewind.sail-validation-preflight-claims.v1",
+  "evidence_scope": "finite software checks and explicitly conditional model screening",
+  "implemented": [
+    "cold-passive-stream coefficient screen",
+    "uniform-stream force/work identity regression",
+    "additive unvalidated native receipt section",
+    "bounded paired sensitivity sweeps",
+    "compute and memory budget estimator",
+    "scalar three-level Richardson/GCI screen"
+  ],
+  "not_established": [
+    "device force-law calibration",
+    "open-boundary spacecraft PIC",
+    "measured GPU throughput",
+    "chamber force validation",
+    "closed spacecraft power budget",
+    "flight propulsion"
+  ],
+  "physical_validation_established": false,
+  "flight_validation_established": false,
+  "documentation": "docs/SAIL_VALIDATION_CAMPAIGN.md",
+  "tests": [
+    "tests/test_main.c",
+    "tests/test_sail_validation_tools.py"
+  ]
+}
