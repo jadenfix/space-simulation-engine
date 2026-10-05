@@ -1,4 +1,5 @@
 #include "spacewind/simulation.h"
+#include "spacewind/sail_validation.h"
 #include "spacewind/constants.h"
 #include "spacewind/metric.h"
 #include "spacewind/version.h"
@@ -489,6 +490,27 @@ static void sw_csv_row(FILE *csv, const sw_simulation *simulation, const sw_simu
     );
 }
 
+static void sw_write_sail_screen(FILE *fp, bool enabled, double cd, double cl) {
+    sw_sail_stream_screen screen;
+    if (!enabled) {
+        fputs("{\"status\":\"disabled\"}", fp);
+    } else if (!sw_sail_screen_cold_passive_stream(cd, cl, &screen)) {
+        fputs("{\"status\":\"invalid_coefficients\",\"necessary_bound_satisfied\":false}", fp);
+    } else {
+        fprintf(fp,
+            "{\"status\":\"%s\",\"cd\":%.17g,\"cl\":%.17g,"
+            "\"necessary_bound_satisfied\":%s,"
+            "\"outgoing_kinetic_power_lower_bound_ratio\":%.17g,"
+            "\"additional_power_lower_bound_over_incoming\":%.17g}",
+            screen.passive_necessary_bound_satisfied ? "within_conditional_bound"
+                : "requires_additional_accounting",
+            cd, cl, screen.passive_necessary_bound_satisfied ? "true" : "false",
+            screen.outgoing_kinetic_power_lower_bound_ratio,
+            screen.additional_power_lower_bound_over_incoming
+        );
+    }
+}
+
 bool sw_simulation_run_csv(
     sw_simulation *simulation,
     FILE *csv,
@@ -556,6 +578,25 @@ bool sw_simulation_run_csv(
         } else {
             fprintf(receipt_json, "null,\n");
         }
+        fputs(
+            "  \"field_sail_validation\": {\n"
+            "    \"schema\": \"spacewind.field-sail-screen.v1\",\n"
+            "    \"force_response\": \"phenomenological\",\n"
+            "    \"physical_validation_established\": false,\n"
+            "    \"flight_validation_established\": false,\n"
+            "    \"coupled_device_power_budget\": false,\n"
+            "    \"screen_scope\": \"Necessary condition for a steady passive cold uniform stream, "
+            "actual intercepted mass-flux area, no additional power, stored-energy change "
+            "or unaccounted particle/field momentum. Not a validation or realizability test.\",\n"
+            "    \"electric\": ", receipt_json);
+        sw_write_sail_screen(receipt_json, simulation->config.enable_electric_sail,
+            simulation->config.vehicle.electric_sail_cd,
+            simulation->config.vehicle.electric_sail_cl);
+        fputs(",\n    \"magnetic\": ", receipt_json);
+        sw_write_sail_screen(receipt_json, simulation->config.enable_magnetic_sail,
+            simulation->config.vehicle.magnetic_sail_cd,
+            simulation->config.vehicle.magnetic_sail_cl);
+        fputs("\n  },\n", receipt_json);
         fprintf(receipt_json,
             "  \"seed\": %" PRIu64 ",\n"
             "  \"integrator\": \"%s\",\n"

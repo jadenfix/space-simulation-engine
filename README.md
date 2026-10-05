@@ -243,9 +243,35 @@ A receipt records:
 - an explicit warning that field-sail response parameters are not flight
   validation.
 
-## Current validation snapshot
+## Sail-validation preflight
 
-At version 0.2.0:
+The optional validation tools make the gap between a working trajectory and a
+validated device explicit:
+
+```sh
+make all test validation-tools
+python3 scripts/sail_validation.py compute configs/validation/compute_3d_example.json
+python3 scripts/sail_validation.py sweep --output output/validation/smoke
+```
+
+Mission receipts now report conditional cold-stream coefficient checks and
+explicitly retain **no physical or flight validation**. The supplied soaring
+coefficients are preserved as an unvalidated hypothesis, not tuned to pass.
+The tooling also supplies bounded paired control runs, provenance hashes,
+compute/memory budgets and a conservative scalar convergence screen. Python
+3.9+ is needed only for these optional tools, not the native engine.
+
+See [the executable validation campaign](docs/SAIL_VALIDATION_CAMPAIGN.md) for
+commands, assumptions, exit codes, experimental gates and remaining device/PIC
+work. No GPU jobs or paid resources are launched by these tools.
+
+## Recorded baseline validation snapshot
+
+The recorded v0.2.0 baseline below predates the optional sail-validation
+preflight additions. It is historical evidence, not a fresh result for every
+subsequent commit; use the current CI and validation commands for that.
+
+At that baseline:
 
 - 3,912 deterministic checks pass.
 - GCC strict build passes.

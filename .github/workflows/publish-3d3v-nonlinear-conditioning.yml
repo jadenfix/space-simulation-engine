@@ -14,7 +14,12 @@ concurrency:
 
 jobs:
   publish:
-    if: github.actor != 'github-actions[bot]'
+    # One-shot publisher for the original bootstrap PR, not a general CI check.
+    # Do not check out or mutate that branch in response to unrelated/fork PRs.
+    if: >-
+      github.actor != 'github-actions[bot]' &&
+      github.head_ref == 'agent/bootstrap-space-simulation-engine' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:

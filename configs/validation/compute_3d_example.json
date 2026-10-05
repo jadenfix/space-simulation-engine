@@ -1,0 +1,29 @@
+{
+  "schema": "spacewind.compute-input.v1",
+  "solver": "explicit_em",
+  "cells": [
+    256,
+    256,
+    256
+  ],
+  "lengths_m": [
+    1000,
+    1000,
+    1000
+  ],
+  "particles_per_cell_total": 64,
+  "bytes_per_particle": 64,
+  "particle_copies": 2,
+  "field_bytes_per_cell": 256,
+  "number_density_m3": 5000000.0,
+  "electron_temperature_ev": 10,
+  "max_particle_speed_m_s": 100000000.0,
+  "duration_s": 0.1,
+  "throughput": {
+    "kind": "assumed",
+    "particle_updates_per_gpu_second": 100000000.0
+  },
+  "gpus": 8,
+  "parallel_efficiency": 1.0,
+  "device_memory_gib": 80
+}
