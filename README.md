@@ -14,6 +14,16 @@ It does **not** assume that spacetime is a material. It models spacetime geometr
 matter-generated weak gravitational fields, the heliospheric environment, and
 spacecraft coupling as distinct physical layers.
 
+## Plasma benchmark demo
+
+![Actual plasma benchmark convergence and conservation outputs](demo/plasma-convergence.gif)
+
+[Watch the MP4](demo/plasma-convergence.mp4) · [Reproduce the numerical evidence](demo/README.md)
+
+This rendered explanation uses freshly executed C solver results on periodic
+synthetic fixtures. It demonstrates timestep refinement and numerical conservation
+checks, without inventing particle trajectories or establishing a propulsion device.
+
 ## What is implemented
 
 ### Geometry and gravity
