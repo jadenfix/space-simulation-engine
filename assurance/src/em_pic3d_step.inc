@@ -541,6 +541,7 @@ int swa_em_pic3d_step(
                 ex_mid_new, ey_mid_new, ez_mid_new, count
             );
         out->nonlinear_iterations = iteration + 1U;
+
         if (state->particle_count == 0U) {
             out->nonlinear_relative_residual = 0.0;
             converged = 1;
@@ -551,9 +552,18 @@ int swa_em_pic3d_step(
             converged = 1;
             break;
         }
-        memcpy(ex_mid, ex_mid_new, count * sizeof(double));
-        memcpy(ey_mid, ey_mid_new, count * sizeof(double));
-        memcpy(ez_mid, ez_mid_new, count * sizeof(double));
+        /* Preserve the fast Picard path for the first nine evaluations.
+         * At long integration times deposition roundoff can create a two-cycle:
+         * copying F(E) alternates forever even when every conservation gate
+         * closes. Half-relaxed Picard damps that cycle while the acceptance
+         * residual above remains the full, unrelaxed ||F(E)-E||. The iteration
+         * budget, tolerance and transactional rejection are unchanged. */
+        for (index = 0U; index < count; ++index) {
+            const double relaxation = iteration > 8U ? 0.5 : 1.0;
+            ex_mid[index] += relaxation * (ex_mid_new[index] - ex_mid[index]);
+            ey_mid[index] += relaxation * (ey_mid_new[index] - ey_mid[index]);
+            ez_mid[index] += relaxation * (ez_mid_new[index] - ez_mid[index]);
+        }
     }
 
     pic3d_faraday_update(

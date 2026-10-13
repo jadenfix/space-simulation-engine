@@ -39,6 +39,9 @@ $(BUILD) $(OUTPUT):
 $(BUILD)/%.o: src/%.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
+$(BUILD)/em_pic1d.o: $(wildcard src/em_pic1d*.inc)
+$(BUILD)/em_pic3d.o: $(wildcard src/em_pic3d*.inc)
+
 $(BUILD)/test_%: tests/test_%.c $(LIBOBJ) | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $< $(LIBOBJ) $(LDLIBS) -o $@
 

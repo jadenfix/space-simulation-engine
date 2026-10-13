@@ -191,3 +191,7 @@ as declared for the tested inputs and toolchains. It does not establish:
   structural constraints;
 - that a complete soaring cycle extracts positive net energy;
 - that a flight-qualified propulsion system exists.
+
+### Nonlinear midpoint iteration
+
+The 3D electromagnetic midpoint solve uses full Picard updates for its first nine evaluations, then half-relaxed updates to damp deposition-roundoff two-cycles. Acceptance still measures the full unrelaxed fixed-point defect against the original tolerance; iteration budgets and failed-step transactional rollback are unchanged. The bounded pair-plasma frequency/conservation benchmark exercises this long-run path.
