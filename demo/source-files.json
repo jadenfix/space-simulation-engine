@@ -1,0 +1,373 @@
+{
+  "source_commit": "52b996bd5d9132d3a32c9c62bc8bb2b2bc7a453b",
+  "files": [
+    {
+      "path": "assurance/CMakeLists.txt",
+      "sha": "91da8b22462b94df9397ed9b035b0898729c4d37"
+    },
+    {
+      "path": "assurance/Makefile",
+      "sha": "bb98873cfb0ce8dc28d9be2794484b991a4b41ed"
+    },
+    {
+      "path": "assurance/README.md",
+      "sha": "a241f80d7444d16d4cdae2e917a36e6318e04177"
+    },
+    {
+      "path": "assurance/include/spacewind/assurance.h",
+      "sha": "142433b90c0de91a023cc236172718f8c82c83d1"
+    },
+    {
+      "path": "assurance/include/spacewind/charge_deposition.h",
+      "sha": "077ecd9a5e3ba6c58cd52a6e4019a215143b0be8"
+    },
+    {
+      "path": "assurance/include/spacewind/covariant_em.h",
+      "sha": "1a014fca63c1fa0e724959b9ced592be3bebda8f"
+    },
+    {
+      "path": "assurance/include/spacewind/em_pic1d.h",
+      "sha": "f2d4e88bd042fe72208b5ed9680e5186c6e63f3f"
+    },
+    {
+      "path": "assurance/include/spacewind/em_pic3d.h",
+      "sha": "5b58b6bdb4c2ab3d4629cd56d4ebff3af0219293"
+    },
+    {
+      "path": "assurance/include/spacewind/evidence.h",
+      "sha": "8c83328104e7ff344882871db849a386d74250e2"
+    },
+    {
+      "path": "assurance/include/spacewind/experiment.h",
+      "sha": "73623a3ab5248a5c8ed9dd2d70b8854b465610e1"
+    },
+    {
+      "path": "assurance/include/spacewind/field_ledger.h",
+      "sha": "730c1adb3185739dd3602e17046775ae67e77df1"
+    },
+    {
+      "path": "assurance/include/spacewind/four_momentum_delta.h",
+      "sha": "147acb8421a6c0da2dc4efc87e423fcd27518ac9"
+    },
+    {
+      "path": "assurance/include/spacewind/invariants.h",
+      "sha": "dce77dd30d61ed1f4fd9ba00441328e7f76f7af0"
+    },
+    {
+      "path": "assurance/include/spacewind/maxwell1d_reference.h",
+      "sha": "1a91e46e3c2453c3598169e42cd69d5e937d4116"
+    },
+    {
+      "path": "assurance/include/spacewind/open_boundary.h",
+      "sha": "f72c9fbc87bd82671289465f8ae253279e62379e"
+    },
+    {
+      "path": "assurance/include/spacewind/pde_checks.h",
+      "sha": "38e4d07e7d8b8b08d36b123527aa84d6c10716d2"
+    },
+    {
+      "path": "assurance/include/spacewind/spectral_poisson.h",
+      "sha": "6716eb64be13ce4b6a4de2e25613fb35e0a84b4e"
+    },
+    {
+      "path": "assurance/pde/CMakeLists.txt",
+      "sha": "7687dfd71473bb64c1754e923fb3cadf5358dadf"
+    },
+    {
+      "path": "assurance/robustness/CMakeLists.txt",
+      "sha": "d0c5d6ca220f6b9ccdc6aeef2dc717f3f089c54b"
+    },
+    {
+      "path": "assurance/scripts/validate.sh",
+      "sha": "8d61a99bb1fdbea83c060ba25d734f5b4957c946"
+    },
+    {
+      "path": "assurance/src/charge_deposition.c",
+      "sha": "26c40a3cfa38a0516a6d445ac51bda1e35553b8d"
+    },
+    {
+      "path": "assurance/src/core.c",
+      "sha": "cca4374dd32de34acd344346749bd781165a1f15"
+    },
+    {
+      "path": "assurance/src/covariant_em.c",
+      "sha": "e061a07205d7c1af7a35959b9cb320c734bf8008"
+    },
+    {
+      "path": "assurance/src/em_pic1d.c",
+      "sha": "f2c91aea15ab721b766069837ecef2c8cd23b046"
+    },
+    {
+      "path": "assurance/src/em_pic1d_deposition.inc",
+      "sha": "ad4aa67addc7b25ca67e7e5e2e274a487fba0b17"
+    },
+    {
+      "path": "assurance/src/em_pic1d_diagnostics.inc",
+      "sha": "59a3440c9af8480d4f0148ea08e8561de8aeb26d"
+    },
+    {
+      "path": "assurance/src/em_pic1d_receipt.inc",
+      "sha": "de0f8e4eb7352ab24a85d13b9ad9dca79c27b7dd"
+    },
+    {
+      "path": "assurance/src/em_pic1d_step.inc",
+      "sha": "36514d53cd40d9cf77d4c983711aed0506e65b25"
+    },
+    {
+      "path": "assurance/src/em_pic1d_support.inc",
+      "sha": "107169a85889a8166fbc89c93132474791585bea"
+    },
+    {
+      "path": "assurance/src/em_pic3d.c",
+      "sha": "dca032a3ef5309bcd9bfb1916dd730661e9ea2f1"
+    },
+    {
+      "path": "assurance/src/em_pic3d_conditioning.inc",
+      "sha": "930aeb027aedec5c301be14e7103f5d5d72ead76"
+    },
+    {
+      "path": "assurance/src/em_pic3d_deposition.inc",
+      "sha": "5c8038d969fac53cfb9949ef5f9debd418934add"
+    },
+    {
+      "path": "assurance/src/em_pic3d_diagnostics.inc",
+      "sha": "77d0b3489092f20c191ee36cc67be4518f4fe25b"
+    },
+    {
+      "path": "assurance/src/em_pic3d_spectral.inc",
+      "sha": "96c2b29d54a0ee99ff7324a12b23f7ab7cb7a7d6"
+    },
+    {
+      "path": "assurance/src/em_pic3d_step.inc",
+      "sha": "43508151425ab2ef010276f7600b1867044b1991"
+    },
+    {
+      "path": "assurance/src/em_pic3d_support.inc",
+      "sha": "8d33264ed65d6971250f6505c21e77cb99be0777"
+    },
+    {
+      "path": "assurance/src/evidence.c",
+      "sha": "b14a325b63509aca0b10fa3c39e2d88668f72aed"
+    },
+    {
+      "path": "assurance/src/experiment.c",
+      "sha": "c3653b4b79f15f7dc9a46ed48ea2227da85847ca"
+    },
+    {
+      "path": "assurance/src/field_ledger.c",
+      "sha": "1a9968cf67a841f7d0b3d8c2ade1bac35927a9d5"
+    },
+    {
+      "path": "assurance/src/four_momentum_delta.c",
+      "sha": "ae43de950fe63c8d8c50bdb82880ab7bc03db369"
+    },
+    {
+      "path": "assurance/src/invariants.c",
+      "sha": "7d4d4ac7afdbb725209de1612bc176d185c9223d"
+    },
+    {
+      "path": "assurance/src/maxwell1d_reference.c",
+      "sha": "b8ad86b441a27e5add07567bbe632f86a3da3175"
+    },
+    {
+      "path": "assurance/src/open_boundary.c",
+      "sha": "837fc6ea5f8d6189a35408558562cc6d3d8a9287"
+    },
+    {
+      "path": "assurance/src/pde_checks.c",
+      "sha": "d3629a07bdd427e2a37359688a5a9ed6551f66d1"
+    },
+    {
+      "path": "assurance/src/physics.c",
+      "sha": "a8abd4de4a947acc46c94630a64adce14d3cf9df"
+    },
+    {
+      "path": "assurance/src/spectral_poisson.c",
+      "sha": "2c2b33ec1ad8a905a3ecbe1e359c058d9fa916ca"
+    },
+    {
+      "path": "assurance/tests/em_pic3d_plasma_modes_parts/part_00.inc",
+      "sha": "7393afa23d1409c979450d9b7fe1493c2a45278a"
+    },
+    {
+      "path": "assurance/tests/em_pic3d_plasma_modes_parts/part_01.inc",
+      "sha": "4f379b3d8ef5e12ad3e582f84ef8d5b0686a2bae"
+    },
+    {
+      "path": "assurance/tests/em_pic3d_plasma_modes_parts/part_02.inc",
+      "sha": "0c83929cf00fc366e6c3a91778e702e7174b0557"
+    },
+    {
+      "path": "assurance/tests/em_pic3d_plasma_modes_parts/part_03.inc",
+      "sha": "e0e26a330382eaeb67862ba03838ec9a21409054"
+    },
+    {
+      "path": "assurance/tests/em_pic3d_plasma_modes_parts/part_04.inc",
+      "sha": "cd5d4656e85da9a5de4b28ca8014fdf32279345e"
+    },
+    {
+      "path": "assurance/tests/em_pic3d_plasma_modes_parts/part_05.inc",
+      "sha": "c19bb73253e942c1bfdd5d1c9bebbe0370802038"
+    },
+    {
+      "path": "assurance/tests/em_pic3d_plasma_modes_parts/part_06.inc",
+      "sha": "6790e9409134cd9ba0d0e6dd7099eae25bb6ae70"
+    },
+    {
+      "path": "assurance/tests/em_pic3d_plasma_modes_parts/part_07.inc",
+      "sha": "913343fffb686cc81640785b5f2a74b16077e5f8"
+    },
+    {
+      "path": "assurance/tests/test_assurance.c",
+      "sha": "820070912f43836f74ca30ddb66c5d346b04889a"
+    },
+    {
+      "path": "assurance/tests/test_charge_deposition.c",
+      "sha": "d215ad0d5228f707ba5bb3f2772d84845ad5e44a"
+    },
+    {
+      "path": "assurance/tests/test_covariant_em.c",
+      "sha": "b1c8c75ed780fe2696bc0c6d08cecb594027c1c3"
+    },
+    {
+      "path": "assurance/tests/test_em_pic1d.c",
+      "sha": "eac64b96dd065e3c35f80f1a90c0f16fc540abf9"
+    },
+    {
+      "path": "assurance/tests/test_em_pic1d_covariant_integration.c",
+      "sha": "913a1ed289d5276c14e63c26bd7fbe9810fdcb8a"
+    },
+    {
+      "path": "assurance/tests/test_em_pic3d.c",
+      "sha": "ab45cd28f84e0f7d3fe518de13d510d039adac26"
+    },
+    {
+      "path": "assurance/tests/test_em_pic3d_covariant_integration.c",
+      "sha": "713eae514b217ddd4ee43325fa945b6cfc53d659"
+    },
+    {
+      "path": "assurance/tests/test_em_pic3d_plasma_diagnostic.c",
+      "sha": "dc3ab911d6c1d235be3ac938c9cdb6b1135a4273"
+    },
+    {
+      "path": "assurance/tests/test_em_pic3d_plasma_modes.c",
+      "sha": "0747466a32016b22d1ecbce4b4eeea6f11480817"
+    },
+    {
+      "path": "assurance/tests/test_evidence.c",
+      "sha": "5097644c53ad1afdc42f538674c2f4f5fb82959b"
+    },
+    {
+      "path": "assurance/tests/test_experiment.c",
+      "sha": "f199161578b28dd5947f168fe2a6c567397bc727"
+    },
+    {
+      "path": "assurance/tests/test_fdtd_spectral_integration.c",
+      "sha": "c4254fb3727fead992cdca8813d2f5a5c13edabc"
+    },
+    {
+      "path": "assurance/tests/test_field_ledger.c",
+      "sha": "a2a37a1aa172e113e2fadeeacaa9c4a2e671b6a8"
+    },
+    {
+      "path": "assurance/tests/test_invariants.c",
+      "sha": "bac42ebf6574a375d2c54475c020305f3328bc2c"
+    },
+    {
+      "path": "assurance/tests/test_maxwell1d_reference.c",
+      "sha": "0821d18d170a42221e24da54731090abf0a6839b"
+    },
+    {
+      "path": "assurance/tests/test_maxwell_covariant_integration.c",
+      "sha": "ada72cf0ade409c43816300851dede669749953d"
+    },
+    {
+      "path": "assurance/tests/test_open_boundary.c",
+      "sha": "27d5d6600ccd65a546ff190d74f1cafd9eb708f6"
+    },
+    {
+      "path": "assurance/tests/test_pde_checks.c",
+      "sha": "56d0440287903b63401a9a2d81558f9460135b11"
+    },
+    {
+      "path": "assurance/tests/test_pic_transport_integration.c",
+      "sha": "e3effa2c94af39a9bd820a594535ee347b35fc8a"
+    },
+    {
+      "path": "assurance/tests/test_robustness.c",
+      "sha": "3a21a0c422a4fc72710298d1eb0fb277e09b595d"
+    },
+    {
+      "path": "assurance/tests/test_spectral_poisson.c",
+      "sha": "8112c5640dedaaaf4d54b8ccd682c0b75755503f"
+    },
+    {
+      "path": "assurance/tests/test_spectral_poisson_integration.c",
+      "sha": "b0dc14927eda16dc1867ec7354fa4b9114c48dfb"
+    },
+    {
+      "path": "include/spacewind/constants.h",
+      "sha": "94a4d7d0ea890e6a74ef632a2e03072bf08b6a02"
+    },
+    {
+      "path": "include/spacewind/fields.h",
+      "sha": "1d0dc75b318a8797bc808557856798c41767960a"
+    },
+    {
+      "path": "include/spacewind/gravity_grid.h",
+      "sha": "c0e8685c313a609072a070c1d27ba2311f4591c9"
+    },
+    {
+      "path": "include/spacewind/integrator.h",
+      "sha": "2da7962da01afccd38114b79bd4a5406384663ff"
+    },
+    {
+      "path": "include/spacewind/math3.h",
+      "sha": "e869453c21f7292b66bcc6bcdd518ded6300569f"
+    },
+    {
+      "path": "include/spacewind/metric.h",
+      "sha": "2c84801a061b989a56abb666f1230317821dd8c0"
+    },
+    {
+      "path": "include/spacewind/mhd1d.h",
+      "sha": "f008d3966074cc246d9f527d62607986a742aad7"
+    },
+    {
+      "path": "include/spacewind/nbody.h",
+      "sha": "4bb58d187334ceb509e37b4a8ab2b9e19840113b"
+    },
+    {
+      "path": "include/spacewind/plasma.h",
+      "sha": "e1b5c9f3d059dd622fb3e28027b230b4f895427d"
+    },
+    {
+      "path": "include/spacewind/rng.h",
+      "sha": "44a178d4885b41ea7e5237183f462947e283372b"
+    },
+    {
+      "path": "include/spacewind/sail_validation.h",
+      "sha": "02080b4a3210bd48328df5b1823603748bbd2587"
+    },
+    {
+      "path": "include/spacewind/simulation.h",
+      "sha": "24031ea0da98c3dc25e14f4da98fcdfc210d612a"
+    },
+    {
+      "path": "include/spacewind/spacecraft.h",
+      "sha": "1a21b2df53e82e21fc30a3a2c4e7dfe6a264c27d"
+    },
+    {
+      "path": "include/spacewind/version.h",
+      "sha": "31109140eb86a97a28017011b31cd8217ff74d47"
+    },
+    {
+      "path": "src/math3.c",
+      "sha": "581b8a1b91c17c564a25c13324478b1a9e7137ec"
+    },
+    {
+      "path": "src/plasma.c",
+      "sha": "147c6ffc4bd4a8a377d21e2896a65f84997629d7"
+    }
+  ]
+}

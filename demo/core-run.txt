@@ -1,0 +1,29 @@
+make: Entering directory '/workspace/scratch/3eef524a2bdb/space-demo/main/assurance'
+spacewind assurance: 14037 checks, 0 failures, hash=aafcd6b319221b0e
+spacewind invariants: 40502 checks, 0 failures, hash=cf5c54c6e6e0fee0
+spacewind experiment assurance: 33 checks, 0 failures, hash=a683d072e06fea3a
+spacewind evidence gates: 36 checks, 0 failures, hash=8e7a41fa2e66b713
+spacewind field ledger assurance: 16032 checks, 0 failures, hash=128d388208ee11d6
+spacewind charge deposition assurance: 443 checks, 0 failures, hash=e233ac462bb9407a
+spacewind spectral Poisson assurance: 50 checks, 0 failures, hash=5689ae89c04ec2ad
+spacewind Maxwell 1D reference: 39 checks, 0 failures, hash=b905075f5994e13d
+spacewind covariant EM assurance: 59515 checks, 0 failures, hash=abcd5091fd7551d1
+spacewind Maxwell/covariant integration: 148 checks, 0 failures, hash=f369e3fb45073841
+spacewind 1D3V EM PIC assurance: 3147 checks, 0 failures, hash=474f318874184d7f
+spacewind EM PIC/covariant integration: 783 checks, 0 failures, hash=2a9e24606551cdcf
+spacewind 3D3V EM PIC assurance: 78609 checks, 0 failures, hash=17a2130ad8d502c7
+spacewind 3D3V/covariant integration: 4127 checks, 0 failures, hash=9145ad1b7fe0680c
+spacewind open-boundary assurance: 15034 checks, 0 failures, hash=f36f8265e943eee7
+spacewind PIC transport integration: 425 checks, 0 failures, hash=e8ff10b6e877ef40
+spacewind root spectral Poisson integration: 31 checks, 0 failures, hash=48fc9984bb2f9748
+spacewind FDTD/spectral integration: 18 checks, 0 failures, hash=6517120a82966fe1
+make: Leaving directory '/workspace/scratch/3eef524a2bdb/space-demo/main/assurance'
+DIAG setup dt=4.927068217813513e-11 omega=124534974.55867387 density=4870383411881.542 init=1
+DIAG configured=1 state_finite=1
+DIAG gauss=1 state_finite=1 abs_charge=1.5606429002275608e-06 tol=1.5606429002275608e-19
+DIAG exec=1 finite=1 passes=1 committed=1 flags[cfl=1 pcfl=1 q=1 cont=1 g0=1 g1=1 d0=1 d1=1 proj=1 local=1 spectral=1 mean=1 nonlinear=1 sublum=1 energy=1 pwork=1 fwork=1 mom=1]
+DIAG metrics[cfl=0.11999999999999998 disp=1.7078685909889717e-06 iterations=2 nonlinear=8.8596275998860008e-11 cont=1.8830571601033178e-16 g0=0 g1=1.888139068304985e-16 d0=0 d1=0 local=7.3281206894666934e-11 spectral=7.8054070249298409e-11 mean=(0,0,0) energy=1.0912574605167031e-14 pwork=3.7842015789332635e-10 fwork=1.0451645366680487e-18 mom=5.1295871102686537e-17 speed=2.8905812548470655e-05]
+DIAG charge[initial=0 final=-3.0917315706270923e-23 change=-3.0917315706270923e-23] continuity[max=5.9645607848759596e-12 rms=2.3928112578005261e-12 zero=-6.2749924172941755e-13] current[raw_l2=0.0033828745617633959 correction_l2=2.4790113065928922e-13 correction_rel=7.3281206894666934e-11 curl_rel=0 mean=(0.0033828745617633963,0,0) transport=(0.0033828745617633963,0,0)]
+DIAG work[particle_dE=1.6667496861993739e-10 field_dE=-1.666749685716264e-10 particle_JE=1.6667496855686422e-10 field_JE=1.6667496857163102e-10 projection_work=1.4766802445902508e-20 particle_res=6.3073167942021917e-20 field_res=4.6270415514684986e-24 total_res=4.8310992537670878e-20]
+DIAG momentum[particle0=(0,0,0) particle1=(-3.944304526105059e-30,0,0) field0=(0,0,0) field1=(0,0,0) residual=(-3.944304526105059e-30,0,0)]
+spacewind 3D3V plasma modes: 37 checks, 0 failures, omega[c=1990960420.9339149 m=1992159494.9968708 f=1992459535.9410987] order[1.998900008924966 1.9995311390384936] hash=dab5a0e9ebf833ea
