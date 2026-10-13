@@ -4,6 +4,11 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      repair_nonlinear_conditioning:
+        description: Apply the legacy nonlinear conditioning repair on its bootstrap branch
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -111,7 +116,7 @@ jobs:
 
 # BEGIN 3D3V_NONLINEAR_CONDITIONING_REPAIR
   nonlinear-conditioning-repair:
-    if: github.event_name == 'pull_request' && github.actor != 'github-actions[bot]'
+    if: github.event_name == 'workflow_dispatch' && inputs.repair_nonlinear_conditioning
     permissions:
       contents: write
     runs-on: ubuntu-latest
