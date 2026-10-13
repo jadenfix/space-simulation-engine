@@ -535,11 +535,35 @@ int swa_em_pic3d_step(
             ez_mid_new[index] =
                 0.5 * (state->ez_V_m[index] + ez_final[index]);
         }
-        out->nonlinear_relative_residual =
-            pic3d_vector_arrays_relative_difference(
-                ex_mid, ey_mid, ez_mid,
-                ex_mid_new, ey_mid_new, ez_mid_new, count
+        {
+            /* The midpoint electric field can pass through zero while the
+               endpoint jump remains physically resolved. Normalize the
+               fixed-point defect by the larger of the midpoint fields and
+               half of that endpoint jump, avoiding a cancellation-driven
+               relative residual without relaxing the requested tolerance. */
+            const double endpoint_change_scale =
+                0.5 * pic3d_vector_arrays_difference_l2(
+                    state->ex_V_m, state->ey_V_m, state->ez_V_m,
+                    ex_final, ey_final, ez_final, count
+                );
+            const double midpoint_difference =
+                pic3d_vector_arrays_difference_l2(
+                    ex_mid, ey_mid, ez_mid,
+                    ex_mid_new, ey_mid_new, ez_mid_new, count
+                );
+            const double midpoint_scale = pic3d_max4(
+                pic3d_vector_arrays_l2(
+                    ex_mid, ey_mid, ez_mid, count
+                ),
+                pic3d_vector_arrays_l2(
+                    ex_mid_new, ey_mid_new, ez_mid_new, count
+                ),
+                endpoint_change_scale,
+                DBL_MIN
             );
+            out->nonlinear_relative_residual =
+                midpoint_difference / midpoint_scale;
+        }
         out->nonlinear_iterations = iteration + 1U;
         if (state->particle_count == 0U) {
             out->nonlinear_relative_residual = 0.0;

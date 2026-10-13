@@ -86,6 +86,8 @@ typedef struct {
     double maximum_particle_displacement_cells;
     size_t maximum_path_segments;
     size_t nonlinear_iterations;
+    /* Midpoint fixed-point L2 defect divided by the maximum of the old/new
+       midpoint field norms, half the endpoint field jump norm, and DBL_MIN. */
     double nonlinear_relative_residual;
 
     double initial_charge_C;

@@ -15,7 +15,7 @@
 #define MODE_MAX_CROSSINGS 16U
 #define MODE_FIELD_AMPLITUDE_V_M 1000.0
 #define MODE_PERIODS 4.5
-#define MODE_MAX_NONLINEAR_ITERATIONS 32U
+#define MODE_MAX_NONLINEAR_ITERATIONS 24U
 /* Instantaneous current normalization is weakest at mode zero crossings. */
 #define MODE_SPECTRAL_ORACLE_ENVELOPE 1.0e-7
 
