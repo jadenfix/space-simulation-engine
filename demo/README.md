@@ -1,7 +1,7 @@
 # Periodic plasma benchmark demo
 
 The GIF and MP4 render actual numerical convergence and conservation outputs from
-source commit `52b996bd5d9132d3a32c9c62bc8bb2b2bc7a453b`.
+source commit `d0d546ee5b519a739a45989c5a28524bf3a91c55`.
 These are explanatory animations of executed C results, not screen recordings,
 particle trajectories, laboratory measurements or device validation.
 
@@ -45,3 +45,7 @@ No source behavior, tolerance, iteration budget or CI gate changes in this PR.
 Synthetic initial conditions; no live space-weather integration, calibrated
 propulsion, laboratory measurements, flight validation or performance claim.
 See root README and assurance documentation for all scientific limits.
+
+The October 14 refresh preserves the same numerical solver and media, and re-executed
+all 20 assurance binaries after adding the 1D included-fragment build dependency.
+All four scientific hosted workflows and workflow lint passed at the recorded source.

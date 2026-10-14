@@ -40,6 +40,7 @@ $(BUILD)/%.o: src/%.c | $(BUILD)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 # Included implementation/test fragments must invalidate their owning targets.
+$(BUILD)/em_pic1d.o: $(wildcard src/em_pic1d*.inc)
 $(BUILD)/em_pic3d.o: $(wildcard src/em_pic3d*.inc)
 $(BUILD)/test_em_pic3d_plasma_modes: $(wildcard tests/em_pic3d_plasma_modes_parts/*.inc)
 
